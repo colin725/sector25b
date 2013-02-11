@@ -28,17 +28,15 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Paint textStroke = new Paint();
         private SurfaceHolder mSurfaceHolder = null;
         private long mLastTime = 0;
+        private long mLastShot = 0;
         private boolean mRun = false;
         private int height, width;
         private boolean joystick = false;
+        private boolean joystick2 = false;
         private Character character;
         private Stars stars;
         private Joystick js = new Joystick();
         private Projectiles projectiles;
-
-        /** input */
-        private float pointx = 0;
-        private float pointy = 0;
 
         /** states */
         private int mState = 2;
@@ -79,8 +77,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     stars.draw(canvas, paint);
                     projectiles.draw(canvas, paint);
                     character.draw(canvas, paint);
-                    js.draw(canvas, paint);
-    
+                    js.drawLeft(canvas, paint);
+                    js.drawRight(canvas, paint);
+
                     canvas.restore();
                 }
             }
@@ -92,15 +91,23 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private void update() {
             // Measure time
             long now = System.currentTimeMillis();
-            double elapsed = (now - mLastTime);
+            double elapsedFrame = (now - mLastTime);
+            double elapsedShot = (now - mLastShot);
 
-            // Update the default gameplay
-            //TODO: cap frame rate by time
-            //if (elapsed > 33) {
-                stars.move(js.getX(), js.getY());
-                character.setDirection(js.getX());
+            // Update the default game play
+            if (elapsedFrame > 33) {
+                stars.move(js.getX1(), js.getY1());
+                character.setDirection(js.getX2());
+                projectiles.update();
                 mLastTime = now;
-            //}
+            }
+
+            if (elapsedShot > 1000) {
+                if (js.getX2() != 0 || js.getY2() != 0) {
+                    projectiles.add(character.getShotX(), character.getShotY(), js.getX2(), js.getY2());
+                    mLastShot = now;
+                }
+            }
         }
 
         @Override
@@ -174,40 +181,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         public boolean onTouchEvent(MotionEvent event) {
-            int eventAction = event.getAction();
-            int actionCode = eventAction & MotionEvent.ACTION_MASK;
-
-            if (actionCode == MotionEvent.ACTION_POINTER_DOWN) {
-            }
-
-            if (eventAction == MotionEvent.ACTION_DOWN) {
-                Log.d(TAG, "onDown");
-                pointx = event.getX();
-                pointy = event.getY();
-
-                if (pointx < width/3 && pointy > height/2){
-                    Log.d(TAG, "jstick = true");
-                    joystick = true;
-                }
-            }
-
-            if (actionCode == MotionEvent.ACTION_POINTER_UP) {
-            }
-
-            if (eventAction == MotionEvent.ACTION_UP) {
-                joystick = false;
-                js.up();
-            }
-
-            if (eventAction == MotionEvent.ACTION_MOVE) {
-                Log.d(TAG, "onMove");
-                if (joystick) {
-                    js.move(pointx, pointy, event.getX(), event.getY());
-                    pointx = event.getX();
-                    pointy = event.getY();
-                }
-            }
-
+            js.touch(event);
             return true;
         }
     }

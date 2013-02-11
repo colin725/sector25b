@@ -25,6 +25,16 @@ public class Character {
     public void set(int width, int height){
         this.width = width;
         this.height = height;
+        x = width/2;
+        y = height*2/5;
+    }
+
+    public float getShotX(){
+        return (x + alien.getWidth()/2 - alien.getWidth()*direction);
+    }
+
+    public float getShotY(){
+        return y;
     }
 
     public void setDirection(float x){
@@ -37,7 +47,7 @@ public class Character {
 
     public void draw(Canvas canvas, Paint paint){
         canvas.save();
-        canvas.translate(width/2, height/2);
+        canvas.translate(x, y);
         if(direction == 1) canvas.scale(-1, 1);
         canvas.drawBitmap(alien, - alien.getWidth()/2,
             - alien.getHeight()/2, paint);
