@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="UseValueOf">
+        <ignore path="src\com\fsck\sector25\sector25view.java" />
+    </issue>
+</lint>
