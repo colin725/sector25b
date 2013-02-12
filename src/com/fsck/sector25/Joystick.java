@@ -12,6 +12,9 @@ import android.view.MotionEvent;
 public class Joystick {
     private int width;
     private int height;
+    private float widthBig;
+    private float widthSmall;
+    private float toEdge;
 
     /* X and Y of left joystick */
     private float x1;
@@ -37,25 +40,28 @@ public class Joystick {
     public void set(int width, int height){
         this.width = width;
         this.height = height;
+        widthBig = (float)height/6;
+        widthSmall = (float)height/10;
+        toEdge = 2 * widthBig - widthSmall;
     }
 
     public void drawLeft(Canvas canvas, Paint paint){
         paint.setAlpha(75);
-        canvas.drawCircle(180, height - 180, 120, paint);
+        canvas.drawCircle(toEdge, height - toEdge, widthBig, paint);
         paint.setAlpha(135);
-        canvas.drawCircle(180 + x1, height - 180 + y1, 60, paint);
+        canvas.drawCircle(toEdge + x1, height - toEdge + y1, widthSmall, paint);
     }
 
     public void drawRight(Canvas canvas, Paint paint){
         paint.setAlpha(75);
-        canvas.drawCircle(width - 180, height - 180, 120, paint);
+        canvas.drawCircle(width - toEdge, height - toEdge, widthBig, paint);
         paint.setAlpha(135);
-        canvas.drawCircle(width - 180 + x2, height - 180 + y2, 60, paint);
+        canvas.drawCircle(width - toEdge + x2, height - toEdge + y2, widthSmall, paint);
     }
 
     //return X joystick distance from center from -1 to 1
     public float getX1(){
-        return (x1/160);
+        return (x1);
     }
 
     public float getX2(){
@@ -64,7 +70,7 @@ public class Joystick {
 
     //return Y joystick distance from center from -1 to 1
     public float getY1(){
-        return (y1/160);
+        return (y1);
     }
 
     public float getY2(){
@@ -72,11 +78,16 @@ public class Joystick {
     }
 
     private void actionDown(MotionEvent event, int ID){
-        if (event.getX(ID) < width/3 && event.getY(ID) > height/2){
+        if (Math.sqrt((event.getX(ID)-toEdge)*(event.getX(ID)-toEdge) +
+                (event.getY(ID)-(height-toEdge))*(event.getY(ID)-(height-toEdge))) 
+                < widthBig){
             pointx1 = event.getX(ID);
             pointy1 = event.getY(ID);
             joystickID1 = ID;
-        } else if (event.getX(ID) > width*2/3 && event.getY(ID) > height/2){
+        }
+        if (Math.sqrt((event.getX(ID)-(width-toEdge))*(event.getX(ID)-(width-toEdge)) +
+                (event.getY(ID)-(height-toEdge))*(event.getY(ID)-(height-toEdge))) 
+                < widthBig){
             pointx2 = event.getX(ID);
             pointy2 = event.getY(ID);
             joystickID2 = ID;
@@ -102,22 +113,22 @@ public class Joystick {
 
     public void actionMove(MotionEvent event, int ID){
         if(event.getPointerId(ID) == joystickID1){
-            x1 += event.getX(ID) - pointx1;
-            y1 += event.getY(ID) - pointy1;
+            x1 = event.getX(ID) - toEdge;
+            y1 = event.getY(ID) - (height - toEdge);
             double a = Math.sqrt((double) (x1 * x1 + y1 * y1));
-            if (a > 80) {
-                x1 = (float) (x1 / a * 80);
-                y1 = (float) (y1 / a * 80);
+            if (a > widthBig) {
+                x1 = (float) (x1 / a * widthBig);
+                y1 = (float) (y1 / a * widthBig);
             }
             pointx1 = event.getX(ID);
             pointy1 = event.getY(ID);
         } else if (event.getPointerId(ID) == joystickID2){
-            x2 += event.getX(ID) - pointx2;
-            y2 += event.getY(ID) - pointy2;
+            x2 = event.getX(ID) - (width - toEdge);
+            y2 = event.getY(ID) - (height - toEdge);
             double a = Math.sqrt((double) (x2 * x2 + y2 * y2));
-            if (a > 80) {
-                x2 = (float) (x2 / a * 80);
-                y2 = (float) (y2 / a * 80);
+            if (a > widthBig) {
+                x2 = (float) (x2 / a * widthBig);
+                y2 = (float) (y2 / a * widthBig);
             }
             pointx2 = event.getX(ID);
             pointy2 = event.getY(ID);

@@ -8,22 +8,25 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Typeface;
+import android.util.Log;
 
 public class Stars {
+    private int width;
+    private int height;
     private float stars[][] = new float[1500][3];
     private float planetPosition[][] = new float[5][3];
     private Bitmap[] planets;
 
     public Stars(Resources res) {
         for (int i = 0; i < 1500; i++) {
-            stars[i][0] = (float) (Math.random() * 2000);
-            stars[i][1] = (float) (Math.random() * 2000);
-            stars[i][2] = (float) (Math.random() * 6);
+            stars[i][0] = (float) (Math.random() * 1.5 - 0.25);
+            stars[i][1] = (float) (Math.random() * 1.5 - 0.25);
+            stars[i][2] = (float) (Math.random() * 0.00006);
         }
         for (int i = 0; i < 5; i++) {
-            planetPosition[i][0] = (float) (Math.random() * 2000);
-            planetPosition[i][1] = (float) (Math.random() * 2000);
-            planetPosition[i][2] = (float) (Math.random() * 6);
+            planetPosition[i][0] = (float) (Math.random() * 1.5 - 0.25);
+            planetPosition[i][1] = (float) (Math.random() * 1.5 - 0.25);
+            planetPosition[i][2] = (float) (Math.random() * 0.00006);
         }
         planets = new Bitmap[5];
         //TODO: scale planets down to appear in background
@@ -39,14 +42,25 @@ public class Stars {
                 R.drawable.planet5);
     }
 
+    public void set(int width, int height){
+        this.width = width;
+        this.height = height;
+        for(int i = 0; i < planets.length; i++){
+            Log.d("sdafasd", "height: " + height + "   width: " + width);
+            Log.d("sdafasd2", "bit width: " + planets[i].getWidth());
+            planets[i] = Bitmap.createScaledBitmap(planets[i], (int)((float)planets[i].getWidth()/2000*(float)width),
+                    (int)((float)planets[i].getWidth()/2000*(float)width), false);
+        }
+    }
+
     public void draw(Canvas canvas, Paint paint){
         for (int i = 0; i < 1500; i++) {
-            canvas.drawPoint(stars[i][0] - 10, stars[i][1] - 10, paint);
+            canvas.drawPoint(stars[i][0]*width, stars[i][1]*height, paint);
         }
 
         paint.setAlpha(60);
         for (int i = 0; i < 5; i++) {
-            canvas.drawBitmap(planets[i], planetPosition[i][0] - 500, planetPosition[i][1] - 500, paint);
+            canvas.drawBitmap(planets[i], planetPosition[i][0]*width, planetPosition[i][1]*height, paint);
         }
         paint.setAlpha(255);
     }
@@ -55,18 +69,18 @@ public class Stars {
         for (int i = 0; i < 1500; i++) {
             stars[i][0] += x * stars[i][2];
             stars[i][1] += y * stars[i][2];
-            if(stars[i][0] > 2000) stars[i][0] = 0;
-            if(stars[i][0] < 0) stars[i][0] = 2000;
-            if(stars[i][1] > 2000) stars[i][1] = 0;
-            if(stars[i][1] < 0) stars[i][1] = 2000;
+            if(stars[i][0] > 1.25) stars[i][0] = -0.25f;
+            if(stars[i][0] < -0.25) stars[i][0] = 1.25f;
+            if(stars[i][1] > 1.25) stars[i][1] =  -0.25f;
+            if(stars[i][1] < -0.25) stars[i][1] = 1.25f;
         }
         for (int i = 0; i < 5; i++) {
             planetPosition[i][0] -= x * planetPosition[i][2];
             planetPosition[i][1] -= y * planetPosition[i][2];
-            if(planetPosition[i][0] > 2000) planetPosition[i][0] = 0;
-            if(planetPosition[i][0] < 0) planetPosition[i][0] = 2000;
-            if(planetPosition[i][1] > 2000) planetPosition[i][1] = 0;
-            if(planetPosition[i][1] < 0) planetPosition[i][1] = 2000;
+            if(planetPosition[i][0] > 1.25) planetPosition[i][0] = -0.25f;
+            if(planetPosition[i][0] < -0.25) planetPosition[i][0] = 1.25f;
+            if(planetPosition[i][1] > 1.25) planetPosition[i][1] = -0.25f;
+            if(planetPosition[i][1] < -0.25) planetPosition[i][1] = 1.25f;
         }
     }
 }

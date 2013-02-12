@@ -2,6 +2,8 @@ package com.fsck.sector25;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -37,6 +39,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Stars stars;
         private Joystick js = new Joystick();
         private Projectiles projectiles;
+        private Bitmap background;
 
         /** states */
         private int mState = 2;
@@ -62,6 +65,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             textStroke.setStrokeWidth(1);
             textStroke.setTextSize(32);
             textStroke.setTypeface(Typeface.DEFAULT_BOLD);
+
+            background = BitmapFactory.decodeResource(res,
+                    R.drawable.background);
         }
 
         /**
@@ -71,7 +77,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             synchronized (mSurfaceHolder) {
                 if(canvas != null){
                     canvas.save();
-                    canvas.drawColor(Color.BLACK);
+                    canvas.drawBitmap(background, 0, 0, paint);
     
                     paint.setAlpha(255);
                     stars.draw(canvas, paint);
@@ -176,7 +182,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 this.width = width;
                 this.height = height;
                 character.set(width, height);
+                stars.set(width, height);
                 js.set(width, height);
+                background = Bitmap.createScaledBitmap(background, width, height, false);
             }
         }
 
