@@ -37,6 +37,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private boolean joystick = false;
         private boolean joystick2 = false;
         private Character character;
+        private Enemy[] enemies;
         private Stars stars;
         private Smoke smoke;
         private Joystick js = new Joystick();
@@ -48,11 +49,16 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         public static final int STATE_PAUSE = 1;
         public static final int STATE_RUNNING = 2;
 
-        public sector25thread(SurfaceHolder surfaceHolder, Context context, Handler handler) {
+        public sector25thread(SurfaceHolder surfaceHolder, Context context,
+                Handler handler) {
             Resources res = context.getResources();
 
             mSurfaceHolder = surfaceHolder;
             character = new Character(res);
+            enemies = new Enemy[3];
+            for (int i = 0; i < enemies.length; i++) {
+                enemies[i] = new Enemy(res);
+            }
             stars = new Stars(res);
             smoke = new Smoke(res);
             projectiles = new Projectiles(res);
@@ -78,16 +84,19 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
          */
         private void doDraw(Canvas canvas) {
             synchronized (mSurfaceHolder) {
-                if(canvas != null){
+                if (canvas != null) {
                     canvas.save();
                     canvas.drawColor(Color.BLACK);
                     canvas.drawBitmap(background, 0, 0, paint);
-    
+
                     paint.setAlpha(255);
                     stars.draw(canvas, paint);
                     smoke.draw(canvas, paint);
                     projectiles.draw(canvas, paint);
                     character.draw(canvas, paint);
+                    for (Enemy enemy : enemies) {
+                        enemy.draw(canvas, paint);
+                    }
                     js.drawLeft(canvas, paint);
                     js.drawRight(canvas, paint);
 
@@ -110,9 +119,15 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             if (elapsedFrame > 33) {
                 stars.move(js.getX1(), js.getY1());
                 smoke.move(js.getX1(), js.getY1());
+
                 if(js.getX1() == 0 && js.getY1() == 0) stars.move((float) Math.random(),
                         (float) Math.random());
                 character.setDirection(js.getX2(), js.getX1());
+
+                for (Enemy enemy : enemies) {
+                    enemy.update(js.getX1(), js.getY1());
+                }
+
                 projectiles.update();
                 smoke.update();
                 mLastTime = now;
@@ -128,7 +143,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             // shoot (place holder, will have to create different shots/upgrades)
             if (elapsedShot > 100) {
                 if (js.getX2() != 0 || js.getY2() != 0) {
-                    projectiles.add(character.getShotX(), character.getShotY(), js.getX2(), js.getY2());
+                    projectiles.add(character.getShotX(), character.getShotY(),
+                            js.getX2(), js.getY2());
                     mLastShot = now;
                 }
             }
@@ -141,7 +157,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 try {
                     c = mSurfaceHolder.lockCanvas();
                     synchronized (mSurfaceHolder) {
-                        if (mState == STATE_RUNNING) update();
+                        if (mState == STATE_RUNNING)
+                            update();
                         doDraw(c);
                     }
                 } finally {
@@ -161,10 +178,11 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 mState = state;
             }
         }
- 
+
         public void pause() {
             synchronized (mSurfaceHolder) {
-                if (mState == STATE_RUNNING) setState(STATE_PAUSE);
+                if (mState == STATE_RUNNING)
+                    setState(STATE_PAUSE);
             }
         }
 
@@ -178,8 +196,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         public Bundle saveState(Bundle map) {
             synchronized (mSurfaceHolder) {
                 if (map != null) {
-                    //TODO: add save state stuff; example:
-                    //map.putInt(KEY_DIFFICULTY, Integer.valueOf(mDifficulty));
+                    // TODO: add save state stuff; example:
+                    // map.putInt(KEY_DIFFICULTY, Integer.valueOf(mDifficulty));
                 }
             }
             return map;
@@ -188,8 +206,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         public synchronized void restoreState(Bundle savedState) {
             synchronized (mSurfaceHolder) {
                 setState(STATE_PAUSE);
-                //TODO: add restore stuff; example:
-                //mX = savedState.getDouble(KEY_X);
+                // TODO: add restore stuff; example:
+                // mX = savedState.getDouble(KEY_X);
             }
         }
 
@@ -200,9 +218,13 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 this.width = width;
                 this.height = height;
                 character.set(width, height);
+                for (Enemy enemy : enemies) {
+                    enemy.set(width, height);
+                }
                 stars.set(width, height);
                 js.set(width, height);
-                background = Bitmap.createScaledBitmap(background, width, height, false);
+                background = Bitmap.createScaledBitmap(background, width,
+                        height, false);
             }
         }
 
@@ -217,7 +239,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
-        thread = new sector25thread(holder, context, new Handler() {});
+        thread = new sector25thread(holder, context, new Handler() {
+        });
         setFocusable(true);
     }
 
@@ -227,7 +250,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
-        if (!hasWindowFocus) thread.pause();
+        if (!hasWindowFocus)
+            thread.pause();
     }
 
     /* Callback invoked when the surface dimensions change. */
@@ -243,7 +267,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         thread.setRunning(true);
-        //TODO: stop thread.start() from being called twice
+        // TODO: stop thread.start() from being called twice
         thread.start();
     }
 
@@ -251,8 +275,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceDestroyed(SurfaceHolder holder) {
         boolean retry = true;
         thread.setRunning(false);
-        //TODO: thread.interrupt instead of join? 
-        //http://stackoverflow.com/questions/12714887/surfaceview-and-thread-already-started-exception
+        // TODO: thread.interrupt instead of join?
+        // http://stackoverflow.com/questions/12714887/surfaceview-and-thread-already-started-exception
         while (retry) {
             try {
                 thread.join();
