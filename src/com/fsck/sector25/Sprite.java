@@ -39,8 +39,14 @@ public class Sprite {
         }
     }
 
+    public void setFrame(int frame) {
+        currentFrame = frame;
+        sRectangle.left = currentFrame * spriteWidth;
+        sRectangle.right = sRectangle.left + spriteWidth;
+    }
+
     public int getWidth(){
-        return animation.getWidth();
+        return animation.getWidth()/numFrames;
     }
 
     public int getHeight(){

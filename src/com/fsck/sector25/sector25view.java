@@ -110,19 +110,23 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             if (elapsedFrame > 33) {
                 stars.move(js.getX1(), js.getY1());
                 smoke.move(js.getX1(), js.getY1());
-                character.setDirection(js.getX2());
+                if(js.getX1() == 0 && js.getY1() == 0) stars.move((float) Math.random(),
+                        (float) Math.random());
+                character.setDirection(js.getX2(), js.getX1());
                 projectiles.update();
                 smoke.update();
                 mLastTime = now;
             }
 
             // add smoke
-            if (elapsedSmoke > 1000) {
-                smoke.add(character.getX(), character.getY());
+            if (elapsedSmoke > 500) {
+                smoke.add(character.getSmokeX(), character.getSmokeY(),
+                        character.getSmokeVX(), character.getSmokeVY());
+                mLastSmoke = now;
             }
 
-            // shoot
-            if (elapsedShot > 1000) {
+            // shoot (place holder, will have to create different shots/upgrades)
+            if (elapsedShot > 100) {
                 if (js.getX2() != 0 || js.getY2() != 0) {
                     projectiles.add(character.getShotX(), character.getShotY(), js.getX2(), js.getY2());
                     mLastShot = now;

@@ -15,11 +15,12 @@ public class Character {
     private float x;
     private float y;
     private int direction;
-    private Bitmap alien;
+    private Sprite spaceman;
+    Bitmap man;
 
     public Character(Resources res) {
-        alien = BitmapFactory.decodeResource(res,
-                R.drawable.alien);
+        man = BitmapFactory.decodeResource(res,
+                R.drawable.spaceman);
     }
 
     public void set(int width, int height){
@@ -27,14 +28,32 @@ public class Character {
         this.height = height;
         x = width/2;
         y = height*2/5;
+
+        spaceman = new Sprite(Bitmap.createScaledBitmap(man, width/5, width/5, false), 2);
     }
 
     public float getShotX(){
-        return (x + alien.getWidth()/2 - alien.getWidth()*direction);
+        return (x + spaceman.getWidth()/2 - spaceman.getWidth()*direction);
     }
 
     public float getShotY(){
         return y;
+    }
+
+    public float getSmokeX(){
+        return (x - spaceman.getWidth()/4 + direction*spaceman.getWidth()/2 + spaceman.getWidth()/4);
+    }
+
+    public float getSmokeY(){
+        return y + spaceman.getHeight()/4;
+    }
+
+    public float getSmokeVX(){
+        return -(x - getSmokeX())/50;
+    }
+
+    public float getSmokeVY(){
+        return (y - getSmokeY())/50;
     }
 
     public float getX(){
@@ -45,10 +64,19 @@ public class Character {
         return y;
     }
 
-    public void setDirection(float x){
+    public void setDirection(float x, float x2){
+        spaceman.setFrame(1);
+        if (x2 > 0){
+            direction = 0;
+            spaceman.setFrame(0);
+        } else if (x2 < 0){
+            direction = 1;
+            spaceman.setFrame(0);
+        }
+
         if (x > 0){
             direction = 0;
-        } else{
+        } else if (x < 0){
             direction = 1;
         }
     }
@@ -57,8 +85,7 @@ public class Character {
         canvas.save();
         canvas.translate(x, y);
         if(direction == 1) canvas.scale(-1, 1);
-        canvas.drawBitmap(alien, - alien.getWidth()/2,
-            - alien.getHeight()/2, paint);
+        spaceman.draw(canvas, 0, 0);
         canvas.restore();
     }
 }

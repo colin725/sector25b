@@ -33,6 +33,11 @@ public class Smoke {
     public void update(){
         for (int i = 0; i < smokes.size(); i++){
             float[] j = smokes.get(i);
+
+            //move away from character
+            j[0]+=j[3];
+            j[1]+=j[4];
+
             //Decrease alpha until gone
             j[2] -= 10;
             if(j[2] <= 0) smokes.remove(i);
@@ -40,11 +45,13 @@ public class Smoke {
         }
     }
 
-    public void add(float x, float y){
-        float[] newSmoke = new float[3];
+    public void add(float x, float y, float vx, float vy){
+        float[] newSmoke = new float[5];
         newSmoke[0] = x; //position x
         newSmoke[1] = y; //position y
         newSmoke[2] = 255; //alpha
+        newSmoke[3] = vx; //velocity x
+        newSmoke[4] = vy; //velocity y
         smokes.add(newSmoke);
     }
 
