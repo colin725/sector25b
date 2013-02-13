@@ -30,6 +30,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Paint textStroke = new Paint();
         private SurfaceHolder mSurfaceHolder = null;
         private long mLastTime = 0;
+        private long mLastSmoke = 0;
         private long mLastShot = 0;
         private boolean mRun = false;
         private int height, width;
@@ -37,6 +38,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private boolean joystick2 = false;
         private Character character;
         private Stars stars;
+        private Smoke smoke;
         private Joystick js = new Joystick();
         private Projectiles projectiles;
         private Bitmap background;
@@ -52,6 +54,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             mSurfaceHolder = surfaceHolder;
             character = new Character(res);
             stars = new Stars(res);
+            smoke = new Smoke(res);
             projectiles = new Projectiles(res);
 
             paint.setColor(Color.WHITE);
@@ -77,10 +80,12 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             synchronized (mSurfaceHolder) {
                 if(canvas != null){
                     canvas.save();
+                    canvas.drawColor(Color.BLACK);
                     canvas.drawBitmap(background, 0, 0, paint);
     
                     paint.setAlpha(255);
                     stars.draw(canvas, paint);
+                    smoke.draw(canvas, paint);
                     projectiles.draw(canvas, paint);
                     character.draw(canvas, paint);
                     js.drawLeft(canvas, paint);
@@ -98,16 +103,25 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             // Measure time
             long now = System.currentTimeMillis();
             double elapsedFrame = (now - mLastTime);
+            double elapsedSmoke = (now - mLastSmoke);
             double elapsedShot = (now - mLastShot);
 
             // Update the default game play
             if (elapsedFrame > 33) {
                 stars.move(js.getX1(), js.getY1());
+                smoke.move(js.getX1(), js.getY1());
                 character.setDirection(js.getX2());
                 projectiles.update();
+                smoke.update();
                 mLastTime = now;
             }
 
+            // add smoke
+            if (elapsedSmoke > 1000) {
+                smoke.add(character.getX(), character.getY());
+            }
+
+            // shoot
             if (elapsedShot > 1000) {
                 if (js.getX2() != 0 || js.getY2() != 0) {
                     projectiles.add(character.getShotX(), character.getShotY(), js.getX2(), js.getY2());

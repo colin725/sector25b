@@ -39,6 +39,14 @@ public class Sprite {
         }
     }
 
+    public int getWidth(){
+        return animation.getWidth();
+    }
+
+    public int getHeight(){
+        return animation.getHeight();
+    }
+
     public void draw(Canvas canvas, int x, int y) {
         Rect dest = new Rect(x - spriteWidth/2, y - spriteHeight/2, x + spriteWidth/2,
                 y + spriteHeight/2);

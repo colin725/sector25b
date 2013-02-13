@@ -37,6 +37,14 @@ public class Character {
         return y;
     }
 
+    public float getX(){
+        return x;
+    }
+
+    public float getY(){
+        return y;
+    }
+
     public void setDirection(float x){
         if (x > 0){
             direction = 0;
