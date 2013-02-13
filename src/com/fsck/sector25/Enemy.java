@@ -49,9 +49,9 @@ public class Enemy {
         vy = velocity * Math.cos(Math.atan2(deltaX, deltaY));
 
         this.x += vx;
-        this.x -= x * .25;
+        this.x -= x * sector25view.VELOCITY_SCALE;
         this.y += vy;
-        this.y -= y * .25;
+        this.y -= y * sector25view.VELOCITY_SCALE;
 
         // Add some randomization to reduce stacking
         this.x += Math.random() * velocity * Math.signum(vx);

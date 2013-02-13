@@ -21,6 +21,12 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     private sector25thread thread;
     private String TAG = "sector25";
 
+    public static final double VELOCITY_SCALE = .25;
+
+    public enum GameState {
+        STATE_PAUSE, STATE_RUNNING
+    }
+
     /*
      * Animation thread
      */
@@ -41,13 +47,15 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Stars stars;
         private Smoke smoke;
         private Joystick js = new Joystick();
+        private float x1, y1, x2, y2;
+        private double vx;
+        private double vy;
         private Projectiles projectiles;
         private Bitmap background;
 
         /** states */
-        private int mState = 2;
-        public static final int STATE_PAUSE = 1;
-        public static final int STATE_RUNNING = 2;
+
+        private GameState mState = GameState.STATE_RUNNING;
 
         public sector25thread(SurfaceHolder surfaceHolder, Context context,
                 Handler handler) {
@@ -61,7 +69,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             }
             stars = new Stars(res);
             smoke = new Smoke(res);
-            projectiles = new Projectiles(res);
+            projectiles = new Projectiles(res, this);
 
             paint.setColor(Color.WHITE);
             paint.setStyle(Paint.Style.FILL);
@@ -117,37 +125,46 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
             // Update the default game play
             if (elapsedFrame > 33) {
-                stars.move(js.getX1(), js.getY1());
-                smoke.move(js.getX1(), js.getY1());
+                x1 = js.getX1();
+                y1 = js.getY1();
+                x2 = js.getX2();
+                y2 = js.getY2();
 
-                if(js.getX1() == 0 && js.getY1() == 0) stars.move((float) Math.random(),
-                        (float) Math.random());
-                character.setDirection(js.getX2(), js.getX1());
+                vx = x1 * VELOCITY_SCALE;
+                vy = y1 * VELOCITY_SCALE;
+                
+                stars.move(x1, y1);
+                smoke.move(x1, y1);
+
+                if (x1 == 0 && y1 == 0)
+                    stars.move((float) Math.random(), (float) Math.random());
+                character.setDirection(x2, x1);
 
                 for (Enemy enemy : enemies) {
-                    enemy.update(js.getX1(), js.getY1());
+                    enemy.update(x1, y1);
                 }
 
                 projectiles.update();
                 smoke.update();
                 mLastTime = now;
-            }
+                // add smoke
+                if (elapsedSmoke > 500) {
+                    smoke.add(character.getSmokeX(), character.getSmokeY(),
+                            character.getSmokeVX(), character.getSmokeVY());
+                    mLastSmoke = now;
+                }
 
-            // add smoke
-            if (elapsedSmoke > 500) {
-                smoke.add(character.getSmokeX(), character.getSmokeY(),
-                        character.getSmokeVX(), character.getSmokeVY());
-                mLastSmoke = now;
-            }
-
-            // shoot (place holder, will have to create different shots/upgrades)
-            if (elapsedShot > 100) {
-                if (js.getX2() != 0 || js.getY2() != 0) {
-                    projectiles.add(character.getShotX(), character.getShotY(),
-                            js.getX2(), js.getY2());
-                    mLastShot = now;
+                // shoot (place holder, will have to create different
+                // shots/upgrades)
+                if (elapsedShot > 100) {
+                    if (x2 != 0 || y2 != 0) {
+                        projectiles.add(character.getShotX(),
+                                character.getShotY(),x2, y2);
+                        mLastShot = now;
+                    }
                 }
             }
+
         }
 
         @Override
@@ -157,7 +174,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 try {
                     c = mSurfaceHolder.lockCanvas();
                     synchronized (mSurfaceHolder) {
-                        if (mState == STATE_RUNNING)
+                        if (mState == GameState.STATE_RUNNING)
                             update();
                         doDraw(c);
                     }
@@ -173,7 +190,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             mRun = b;
         }
 
-        public void setState(int state) {
+        public void setState(GameState state) {
             synchronized (mSurfaceHolder) {
                 mState = state;
             }
@@ -181,8 +198,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public void pause() {
             synchronized (mSurfaceHolder) {
-                if (mState == STATE_RUNNING)
-                    setState(STATE_PAUSE);
+                if (mState == GameState.STATE_RUNNING)
+                    setState(GameState.STATE_PAUSE);
             }
         }
 
@@ -190,7 +207,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             synchronized (mSurfaceHolder) {
                 mLastTime = System.currentTimeMillis() + 100;
             }
-            setState(STATE_RUNNING);
+            setState(GameState.STATE_RUNNING);
         }
 
         public Bundle saveState(Bundle map) {
@@ -205,7 +222,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public synchronized void restoreState(Bundle savedState) {
             synchronized (mSurfaceHolder) {
-                setState(STATE_PAUSE);
+                setState(GameState.STATE_PAUSE);
                 // TODO: add restore stuff; example:
                 // mX = savedState.getDouble(KEY_X);
             }
@@ -231,6 +248,82 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         public boolean onTouchEvent(MotionEvent event) {
             js.touch(event);
             return true;
+        }
+
+        public Paint getPaint() {
+            return paint;
+        }
+
+        public Paint getTextStroke() {
+            return textStroke;
+        }
+
+        public SurfaceHolder getmSurfaceHolder() {
+            return mSurfaceHolder;
+        }
+
+        public long getmLastTime() {
+            return mLastTime;
+        }
+
+        public long getmLastSmoke() {
+            return mLastSmoke;
+        }
+
+        public long getmLastShot() {
+            return mLastShot;
+        }
+
+        public boolean isRunning() {
+            return mRun;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public Character getCharacter() {
+            return character;
+        }
+
+        public Enemy[] getEnemies() {
+            return enemies;
+        }
+
+        public Stars getStars() {
+            return stars;
+        }
+
+        public Smoke getSmoke() {
+            return smoke;
+        }
+
+        public Joystick getJs() {
+            return js;
+        }
+
+        public Projectiles getProjectiles() {
+            return projectiles;
+        }
+
+        public Bitmap getBackground() {
+            return background;
+        }
+
+        public GameState getThreadState() {
+            return mState;
+        }
+
+        public double getVX() {
+            return vx;
+        }
+
+        public double getVY() {
+            return vy;
         }
     }
 
