@@ -31,7 +31,7 @@ public class Smoke {
     }
 
     public void update(){
-        for (int i = 0; i < smokes.size(); i++){
+        for (int i = smokes.size()-1; i >= 0; i--){
             float[] j = smokes.get(i);
 
             //move away from character

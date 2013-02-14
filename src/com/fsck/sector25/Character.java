@@ -120,4 +120,8 @@ public class Character {
 
         canvas.restore();
     }
+
+    public void drawHit(Canvas canvas, Paint paint){
+        canvas.drawCircle(x, y, 20, paint);
+    }
 }

@@ -1,5 +1,7 @@
 package com.fsck.sector25;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -21,7 +23,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     private sector25thread thread;
     private String TAG = "sector25";
 
-    public static final double VELOCITY_SCALE = .25;
+    public static final float VELOCITY_SCALE = .25f;
+    public static final boolean DRAW_HITBOXES = false;
 
     public enum GameState {
         STATE_PAUSE, STATE_RUNNING
@@ -40,18 +43,17 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private long mLastShot = 0;
         private boolean mRun = false;
         private int height, width;
-        private boolean joystick = false;
-        private boolean joystick2 = false;
         private Character character;
-        private Enemy[] enemies;
+        private ArrayList<Enemy> enemies;
         private Stars stars;
         private Smoke smoke;
         private Joystick js = new Joystick();
         private float x1, y1, x2, y2;
-        private double vx;
-        private double vy;
+        private float vx;
+        private float vy;
         private Projectiles projectiles;
         private Bitmap background;
+        private Bitmap enemy;
 
         /** states */
 
@@ -63,10 +65,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
             mSurfaceHolder = surfaceHolder;
             character = new Character(res);
-            enemies = new Enemy[3];
-            for (int i = 0; i < enemies.length; i++) {
-                enemies[i] = new Enemy(res);
-            }
+            enemies = new ArrayList<Enemy>();
             stars = new Stars(res);
             smoke = new Smoke(res);
             projectiles = new Projectiles(res, this);
@@ -85,6 +84,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
             background = BitmapFactory.decodeResource(res,
                     R.drawable.background);
+            enemy = BitmapFactory.decodeResource(res, R.drawable.enemy);
         }
 
         /**
@@ -110,6 +110,14 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                     canvas.restore();
                 }
+
+                if (DRAW_HITBOXES) {
+                    character.drawHit(canvas, paint);
+                    projectiles.drawHit(canvas, paint);
+                    for (Enemy enemy : enemies) {
+                        enemy.drawHit(canvas, paint);
+                    }
+                }
             }
         }
 
@@ -117,55 +125,68 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
          * Updates each frame
          */
         private void update() {
-            // Measure time
-            long now = System.currentTimeMillis();
-            double elapsedFrame = (now - mLastTime);
-            double elapsedSmoke = (now - mLastSmoke);
-            double elapsedShot = (now - mLastShot);
+            synchronized (mSurfaceHolder) {
+                // Measure time
+                long now = System.currentTimeMillis();
+                double elapsedFrame = (now - mLastTime);
+                double elapsedSmoke = (now - mLastSmoke);
+                double elapsedShot = (now - mLastShot);
 
-            // Update the default game play
-            if (elapsedFrame > 33) {
-                x1 = js.getX1();
-                y1 = js.getY1();
-                x2 = js.getX2();
-                y2 = js.getY2();
+                // Update the default game play
+                if (elapsedFrame > 33) {
+                    x1 = js.getX1();
+                    y1 = js.getY1();
+                    x2 = js.getX2();
+                    y2 = js.getY2();
 
-                vx = x1 * VELOCITY_SCALE;
-                vy = y1 * VELOCITY_SCALE;
-                
-                stars.move(x1, y1);
-                smoke.move(x1, y1);
+                    vx = x1 * VELOCITY_SCALE;
+                    vy = y1 * VELOCITY_SCALE;
 
-                if (x1 == 0 && y1 == 0)
-                    stars.move((float) Math.random(), (float) Math.random());
-                character.setDirection(x1, y1, x2, y2);
+                    stars.move(x1, y1);
+                    smoke.move(x1, y1);
 
-                for (Enemy enemy : enemies) {
-                    enemy.update(x1, y1);
-                }
+                    if (x1 == 0 && y1 == 0)
+                        stars.move((float) Math.random(), (float) Math.random());
+                    character.setDirection(x1, y1, x2, y2);
 
-                projectiles.update();
-                smoke.update();
-                mLastTime = now;
+                    for (int i = enemies.size() - 1; i >= 0; i--) {
+                        Enemy enemy = enemies.get(i);
+                        enemy.update(x1, y1);
 
-                // add smoke
-                if (elapsedSmoke > 300) {
-                    smoke.add(character.getSmokeX(), character.getSmokeY(),
-                            character.getSmokeVX(), character.getSmokeVY());
-                    mLastSmoke = now;
-                }
+                        // check for hits
+                        if (projectiles.testHit(enemy.getHitBox())) {
+                            enemies.remove(i);
+                            Log.d(TAG, "remove " + i);
+                        } else {
+                            enemies.set(i, enemy);
+                        }
+                    }
 
-                // shoot (place holder, will have to create different
-                // shots/upgrades)
-                if (elapsedShot > 100) {
-                    if (x2 != 0 || y2 != 0) {
-                        projectiles.add(character.getShotX(),
-                                character.getShotY(),x2, y2);
-                        mLastShot = now;
+                    projectiles.update(vx, vy);
+                    smoke.update();
+                    mLastTime = now;
+
+                    // add smoke
+                    if (elapsedSmoke > 300) {
+                        smoke.add(character.getSmokeX(), character.getSmokeY(),
+                                character.getSmokeVX(), character.getSmokeVY());
+                        mLastSmoke = now;
+
+                        //placeholder adding enemies
+                        enemies.add(new Enemy(enemy, width, height));
+                    }
+
+                    // shoot (place holder, will have to create different
+                    // shots/upgrades)
+                    if (elapsedShot > 100) {
+                        if (x2 != 0 || y2 != 0) {
+                            projectiles.add(character.getShotX(),
+                                    character.getShotY(), x2, y2);
+                            mLastShot = now;
+                        }
                     }
                 }
             }
-
         }
 
         @Override
@@ -236,9 +257,6 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 this.width = width;
                 this.height = height;
                 character.set(width, height);
-                for (Enemy enemy : enemies) {
-                    enemy.set(width, height);
-                }
                 stars.set(width, height);
                 js.set(width, height);
                 background = Bitmap.createScaledBitmap(background, width,
@@ -291,7 +309,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             return character;
         }
 
-        public Enemy[] getEnemies() {
+        public ArrayList<Enemy> getEnemies() {
             return enemies;
         }
 

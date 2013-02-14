@@ -20,19 +20,17 @@ public class Enemy {
     private int direction;
     private Bitmap sprite;
 
-    public Enemy(Resources res) {
-        Bitmap bitmap = BitmapFactory.decodeResource(res, R.drawable.enemy);
+    private static final float hitboxRadius = 15;
 
-        sprite = Bitmap.createScaledBitmap(bitmap,
-                (int) (bitmap.getWidth() * .3),
-                (int) (bitmap.getHeight() * .3), false);
-        height = sprite.getHeight();
-        width = sprite.getWidth();
-        velocity = 10;
-    }
-
-    public void set(int width, int height) {
+    public Enemy(Bitmap enemy, int width, int height) {
+        sprite = enemy;
+        velocity = 8;
         Random r = new Random();
+        sprite = Bitmap.createScaledBitmap(sprite,
+                (int) (width/20),
+                (int) (width/20), false);
+        this.height = sprite.getHeight();
+        this.width = sprite.getWidth();
         this.x = r.nextFloat() * width;
         this.y = r.nextFloat() * height;
         targetX = width / 2;
@@ -58,6 +56,14 @@ public class Enemy {
         this.y += Math.random() * velocity * Math.signum(vy);
     }
 
+    public float[] getHitBox(){
+        float[] hitbox = new float[3];
+        hitbox[0] = x;
+        hitbox[1] = y;
+        hitbox[2] = hitboxRadius;
+        return hitbox;
+    }
+
     public void draw(Canvas canvas, Paint paint) {
         canvas.save();
         canvas.translate(x, y);
@@ -67,4 +73,7 @@ public class Enemy {
         canvas.restore();
     }
 
+    public void drawHit(Canvas canvas, Paint paint) {
+        canvas.drawCircle(x, y, hitboxRadius, paint);
+    }
 }
