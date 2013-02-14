@@ -138,7 +138,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                 if (x1 == 0 && y1 == 0)
                     stars.move((float) Math.random(), (float) Math.random());
-                character.setDirection(x2, x1);
+                character.setDirection(x1, y1, x2, y2);
 
                 for (Enemy enemy : enemies) {
                     enemy.update(x1, y1);
@@ -147,8 +147,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 projectiles.update();
                 smoke.update();
                 mLastTime = now;
+
                 // add smoke
-                if (elapsedSmoke > 500) {
+                if (elapsedSmoke > 300) {
                     smoke.add(character.getSmokeX(), character.getSmokeY(),
                             character.getSmokeVX(), character.getSmokeVY());
                     mLastSmoke = now;
