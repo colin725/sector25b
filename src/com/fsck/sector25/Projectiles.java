@@ -51,7 +51,7 @@ public class Projectiles {
         return false;
     }
 
-    public void update(float dx, float dy) {
+    public void update(float dx, float dy, float characterX, float characterY, float maxDistance) {
         for (float[] i : projectiles) {
             // increments frame of each projectile
             i[4] = (i[4] + 1) % 28;
@@ -60,7 +60,13 @@ public class Projectiles {
             i[1] = (float) (i[1] + i[3] - dy / 3);
         }
 
-        // TODO:remove projectiles off screen
+        for (int i = projectiles.size() - 1; i >= 0; i--) {
+            float[] projectile = projectiles.get(i);
+            float xDif = projectile[0] - characterX;
+            float yDif = projectile[1] - characterY;
+            if (Math.sqrt(xDif * xDif + yDif * yDif) > maxDistance)
+                projectiles.remove(i);
+        }
 
         sprite.Update();
     }

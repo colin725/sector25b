@@ -47,6 +47,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private ArrayList<Enemy> enemies;
         private Stars stars;
         private Smoke smoke;
+        private Healthbar healthbar;
         private Joystick js = new Joystick();
         private float x1, y1, x2, y2;
         private float vx;
@@ -68,6 +69,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             enemies = new ArrayList<Enemy>();
             stars = new Stars(res);
             smoke = new Smoke(res);
+            healthbar = new Healthbar(res);
             projectiles = new Projectiles(res, this);
 
             paint.setColor(Color.WHITE);
@@ -107,6 +109,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     }
                     js.drawLeft(canvas, paint);
                     js.drawRight(canvas, paint);
+                    healthbar.draw(canvas, width/2, height*9/10);
 
                     canvas.restore();
                 }
@@ -151,18 +154,24 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                     for (int i = enemies.size() - 1; i >= 0; i--) {
                         Enemy enemy = enemies.get(i);
-                        enemy.update(x1, y1);
+                        enemy.update(x1, y1, character.getX(), character.getY());
 
                         // check for hits
                         if (projectiles.testHit(enemy.getHitBox())) {
                             enemies.remove(i);
+                            smoke.add(enemy.getX(), enemy.getY(), 0, 0);
+                            Log.d(TAG, "remove " + i);
+                        } else if (character.testHit(enemy.getHitBox())) {
+                            enemies.remove(i);
+                            healthbar.incrementHealth(-5);
+                            smoke.add(enemy.getX(), enemy.getY(), 0, 0);
                             Log.d(TAG, "remove " + i);
                         } else {
                             enemies.set(i, enemy);
                         }
                     }
 
-                    projectiles.update(vx, vy);
+                    projectiles.update(vx, vy, character.getX(), character.getY(), height*2);
                     smoke.update();
                     mLastTime = now;
 
@@ -173,7 +182,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         mLastSmoke = now;
 
                         //placeholder adding enemies
-                        enemies.add(new Enemy(enemy, width, height));
+                        if(enemies.size() < 100) enemies.add(new Enemy(enemy, width, height, character.getX(), character.getY()));
                     }
 
                     // shoot (place holder, will have to create different

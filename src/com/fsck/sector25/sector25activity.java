@@ -18,7 +18,7 @@ public class sector25activity extends Activity {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.s25);
-     
+
         sector25view = (sector25view) findViewById(R.id.s25);
         if(savedInstanceState != null){
             sector25view.getThread().restoreState(savedInstanceState);

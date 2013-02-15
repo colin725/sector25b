@@ -18,6 +18,7 @@ public class Character {
     private int direction;
     private float directionGun;
     private Sprite spaceman;
+    float[][] hitbox = new float[3][3];
     Bitmap man;
     Bitmap arm1;
     Bitmap arm2;
@@ -44,6 +45,10 @@ public class Character {
         arm1 = Bitmap.createScaledBitmap(arm1, width*1/30, width*1/40, false);
         arm2 = Bitmap.createScaledBitmap(arm2, width*1/30, width*1/45, false);
         gun = Bitmap.createScaledBitmap(gun, width*1/13, width*1/26, false);
+
+        hitbox[0] = new float[]{0,spaceman.getHeight()/4,20};
+        hitbox[1] = new float[]{0,-spaceman.getHeight()/7,30};
+        hitbox[2] = new float[]{0,0,20};
     }
 
     public float getShotX(){
@@ -121,7 +126,22 @@ public class Character {
         canvas.restore();
     }
 
+    public boolean testHit(float[] enemy) {
+        for (int i = 0; i < hitbox.length; i++) {
+            float xdist = (x + hitbox[i][0]) - enemy[0];
+            float ydist = (y + hitbox[i][1]) - enemy[1];
+            float distance = (float) Math.sqrt(xdist * xdist + ydist * ydist);
+            if (distance < enemy[2] + hitbox[i][2]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void drawHit(Canvas canvas, Paint paint){
-        canvas.drawCircle(x, y, 20, paint);
+        //TODO: better hitboxes?  Might be fine like this.
+        canvas.drawCircle(x + hitbox[0][0], y + hitbox[0][1], hitbox[0][2], paint);
+        canvas.drawCircle(x + hitbox[1][0], y + hitbox[1][1], hitbox[1][2], paint);
+        canvas.drawCircle(x + hitbox[2][0], y + hitbox[2][1], hitbox[2][2], paint);
     }
 }
