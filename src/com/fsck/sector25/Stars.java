@@ -65,18 +65,18 @@ public class Stars {
         paint.setAlpha(255);
     }
 
-    public void move(float x, float y){
+    public void move(Vector v){
         for (int i = 0; i < 1500; i++) {
-            stars[i][0] -= x * stars[i][2];
-            stars[i][1] -= y * stars[i][2];
+            stars[i][0] -= v.getX() * stars[i][2];
+            stars[i][1] -= v.getY() * stars[i][2];
             if(stars[i][0] > 1.25) stars[i][0] = -0.25f;
             if(stars[i][0] < -0.25) stars[i][0] = 1.25f;
             if(stars[i][1] > 1.25) stars[i][1] =  -0.25f;
             if(stars[i][1] < -0.25) stars[i][1] = 1.25f;
         }
         for (int i = 0; i < 5; i++) {
-            planetPosition[i][0] -= x * planetPosition[i][2];
-            planetPosition[i][1] -= y * planetPosition[i][2];
+            planetPosition[i][0] -= v.getX() * planetPosition[i][2];
+            planetPosition[i][1] -= v.getY() * planetPosition[i][2];
             if(planetPosition[i][0] > 1.25) planetPosition[i][0] = -0.25f;
             if(planetPosition[i][0] < -0.25) planetPosition[i][0] = 1.25f;
             if(planetPosition[i][1] > 1.25) planetPosition[i][1] = -0.25f;
