@@ -4,15 +4,10 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Paint.Align;
-import android.graphics.Typeface;
-import android.util.Log;
 
 public class Character {
-    private int width;
-    private int height;
+
     private Point position;
     private Point smokePosition;
     private Vector velocity;
@@ -33,8 +28,6 @@ public class Character {
     }
 
     public void set(int width, int height) {
-        this.width = width;
-        this.height = height;
         position = new Point(width / 2, height * 2 / 5);
         velocity = new Vector(0, 0);
 

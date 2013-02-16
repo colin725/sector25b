@@ -2,16 +2,12 @@ package com.fsck.sector25;
 
 import java.util.ArrayList;
 
-import com.fsck.sector25.sector25view.sector25thread;
-
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Paint.Align;
-import android.graphics.Typeface;
+
+import com.fsck.sector25.sector25view.sector25thread;
 
 public class Projectiles {
     ArrayList<float[]> projectiles = new ArrayList<float[]>();
