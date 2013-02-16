@@ -46,6 +46,9 @@ public class Vector {
 
     public Vector normalize() {
         float a = mag();
+        if (a == 0) {
+            return new Vector(0, 0);
+        }
         return new Vector(this.x / a, this.y / a);
     }
 
