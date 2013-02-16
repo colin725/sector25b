@@ -1,5 +1,6 @@
 package com.fsck.sector25;
 
+import java.lang.Thread.State;
 import java.util.ArrayList;
 
 import android.content.Context;
@@ -398,8 +399,12 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+
+        if (!(thread.getState() == State.NEW)){
+            thread = new sector25thread(holder, this.getContext(), new Handler() {
+            });
+        }
         thread.setRunning(true);
-        // TODO: stop thread.start() from being called twice
         thread.start();
     }
 
