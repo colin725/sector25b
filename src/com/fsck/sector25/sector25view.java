@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.TextView;
 
 class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -39,6 +40,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
      */
     class sector25thread extends Thread {
 
+        private Handler handler;
+        private TextView scoreText;
+        private int score;
         private Paint paint = new Paint();
         private Paint textStroke = new Paint();
         private SurfaceHolder mSurfaceHolder = null;
@@ -67,6 +71,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         public sector25thread(SurfaceHolder surfaceHolder, Context context,
                 Handler handler) {
             Resources res = context.getResources();
+            this.handler = handler;
 
             mSurfaceHolder = surfaceHolder;
             character = new Character(res);
@@ -74,7 +79,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             stars = new Stars(res);
             smoke = new Smoke(res);
             healthbar = new Healthbar(res);
-            projectiles = new Projectiles(res, this);
+            projectiles = new Projectiles(res);
 
             paint.setColor(Color.WHITE);
             paint.setStyle(Paint.Style.FILL);
@@ -145,6 +150,11 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     y1 = js.getY1();
                     x2 = js.getX2();
                     y2 = js.getY2();
+
+                    //Place holder for score; arcade mode where score
+                    //is determined by distance traveled to the right.
+                    score += x1;
+                    handler.postDelayed(scoreUpdate, 1);
 
                     Vector charVelocity = new Vector(x1,y1).scale(VELOCITY_SCALE);
                     Vector gunDirection = (new Vector(x2,y2)).normalize();
@@ -226,6 +236,12 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
         }
+
+        private Runnable scoreUpdate = new Runnable() {
+            public void run() {
+                scoreText.setText("Score: " + score/100 + "  ");
+            }
+        };
 
         public void setRunning(boolean b) {
             mRun = b;
@@ -362,6 +378,10 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public double getVY() {
             return vy;
+        }
+
+        public void setTextView(TextView view) {
+            scoreText = view;
         }
     }
 

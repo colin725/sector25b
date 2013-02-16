@@ -7,14 +7,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import com.fsck.sector25.sector25view.sector25thread;
-
 public class Projectiles {
     ArrayList<float[]> projectiles = new ArrayList<float[]>();
     Sprite sprite;
     private static final float hitboxRadius = 12;
 
-    public Projectiles(Resources res, sector25thread parentThread) {
+    public Projectiles(Resources res) {
         sprite = new Sprite(BitmapFactory.decodeResource(res, R.drawable.laze),
                 28);
     }
