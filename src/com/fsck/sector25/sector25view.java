@@ -10,11 +10,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -23,10 +21,8 @@ import android.widget.TextView;
 class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
     private sector25thread thread;
+    @SuppressWarnings("unused")
     private String TAG = "sector25";
-
-    private float width;
-    private float height;
 
     public static final float VELOCITY_SCALE = .25f;
     public static final boolean DRAW_HITBOXES = false;
@@ -40,29 +36,22 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
      */
     class sector25thread extends Thread {
 
+        //TODO: Make handler static to avoid memory leaks!
         private Handler handler;
         private TextView scoreText;
         private int score;
         private Paint paint = new Paint();
-        private Paint textStroke = new Paint();
         private SurfaceHolder mSurfaceHolder = null;
         private long mLastTime = 0;
         private long mLastSmoke = 0;
         private long mLastShot = 0;
         private boolean mRun = false;
         private int height, width;
+        private Level level;
         private Character character;
-        private ArrayList<Enemy> enemies;
-        private Stars stars;
-        private Smoke smoke;
         private Healthbar healthbar;
         private Joystick js = new Joystick();
-        private float x1, y1, x2, y2;
-        private float vx;
-        private float vy;
-        private Projectiles projectiles;
         private Bitmap background;
-        private Bitmap enemy;
 
         /** states */
 
@@ -72,30 +61,13 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 Handler handler) {
             Resources res = context.getResources();
             this.handler = handler;
-
             mSurfaceHolder = surfaceHolder;
             character = new Character(res);
-            enemies = new ArrayList<Enemy>();
-            stars = new Stars(res);
-            smoke = new Smoke(res);
             healthbar = new Healthbar(res);
-            projectiles = new Projectiles(res);
-
+            level = new Level(0, res);
             paint.setColor(Color.WHITE);
-            paint.setStyle(Paint.Style.FILL);
-            paint.setTextSize(32);
-            paint.setTypeface(Typeface.DEFAULT_BOLD);
-
-            textStroke.setColor(Color.BLACK);
-            textStroke.setStyle(Paint.Style.STROKE);
-            textStroke.setAntiAlias(true);
-            textStroke.setStrokeWidth(1);
-            textStroke.setTextSize(32);
-            textStroke.setTypeface(Typeface.DEFAULT_BOLD);
-
             background = BitmapFactory.decodeResource(res,
                     R.drawable.background);
-            enemy = BitmapFactory.decodeResource(res, R.drawable.enemy);
         }
 
         /**
@@ -109,13 +81,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     canvas.drawBitmap(background, 0, 0, paint);
 
                     paint.setAlpha(255);
-                    stars.draw(canvas, paint);
-                    smoke.draw(canvas, paint);
-                    projectiles.draw(canvas, paint);
+                    level.draw(canvas, paint);
                     character.draw(canvas, paint);
-                    for (Enemy enemy : enemies) {
-                        enemy.draw(canvas, paint);
-                    }
                     js.drawLeft(canvas, paint);
                     js.drawRight(canvas, paint);
                     healthbar.draw(canvas, width / 2, height * 9 / 10);
@@ -125,10 +92,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                 if (DRAW_HITBOXES) {
                     character.drawHit(canvas, paint);
-                    projectiles.drawHit(canvas, paint);
-                    for (Enemy enemy : enemies) {
-                        enemy.drawHit(canvas, paint);
-                    }
+                    level.drawHit(canvas);
                 }
             }
         }
@@ -146,71 +110,46 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                 // Update the default game play
                 if (elapsedFrame > 33) {
-                    x1 = js.getX1();
-                    y1 = js.getY1();
-                    x2 = js.getX2();
-                    y2 = js.getY2();
+                    Vector charVelocity = new Vector(js.getX1(),js.getY1());
+                    Vector gunDirection = (new Vector(js.getX2(),js.getY2())).normalize();
 
                     //Place holder for score; arcade mode where score
                     //is determined by distance traveled to the right.
-                    score += x1;
+                    score += js.getX1();
                     handler.postDelayed(scoreUpdate, 1);
 
-                    Vector charVelocity = new Vector(x1,y1).scale(VELOCITY_SCALE);
-                    Vector gunDirection = (new Vector(x2,y2)).normalize();
-                    
-                    vx = x1 * VELOCITY_SCALE;
-                    vy = y1 * VELOCITY_SCALE;
-
-                    stars.move(charVelocity);
-                    smoke.move(charVelocity);
-
-                    if (x1 == 0 && y1 == 0)
-                        stars.move(Vector.random());
                     character.update(charVelocity, gunDirection);
-
-                    for (int i = enemies.size() - 1; i >= 0; i--) {
-                        Enemy enemy = enemies.get(i);
-                        enemy.update(charVelocity, character.getPosition());
-
-                        // check for hits
-                        if (projectiles.testHit(enemy.getHitBox())) {
-                            enemies.remove(i);
-                            smoke.add(enemy.getPosition(), Vector.zero());
-                            Log.d(TAG, "remove " + i);
-                        } else if (character.testHit(enemy.getHitBox())) {
-                            enemies.remove(i);
-                            healthbar.incrementHealth(-5);
-                            smoke.add(enemy.getPosition(), Vector.zero());
-                            Log.d(TAG, "remove " + i);
-                        } else {
-                            enemies.set(i, enemy);
-                        }
-                    }
-
-                    projectiles.update(vx, vy, character.getX(),
-                            character.getY(), height * 2);
-                    smoke.update();
+                    level.update(charVelocity, character.getPosition());
                     mLastTime = now;
+
+                    int count = 0;
+                    ArrayList<Integer> remove = new ArrayList<Integer>();
+                    for(Enemy enemy : level.getEnemies()){
+                        if(character.testHit(enemy.getHitBox())) {
+                            healthbar.incrementHealth(-5);
+                            remove.add(count);
+                        }
+                        count++;
+                    }
+                    for(int i = remove.size() - 1; i >= 0; i--) {
+                        level.removeEnemy(remove.get(i));
+                    }
 
                     // add smoke
                     if (elapsedSmoke > 300) {
-                        smoke.add(character.getSmokePosition(),
+                        level.addSmoke(character.getSmokePosition(),
                                 character.getSmokeVelocity());
                         mLastSmoke = now;
 
                         // placeholder adding enemies
-                        if (enemies.size() < 100)
-                            enemies.add(new Enemy(enemy, width, height,
-                                    character.getPosition()));
+                        level.addEnemy(character.getPosition());
                     }
 
                     // shoot (place holder, will have to create different
                     // shots/upgrades)
                     if (elapsedShot > 100) {
-                        if (x2 != 0 || y2 != 0) {
-                            projectiles.add(character.getShotX(),
-                                    character.getShotY(), x2, y2);
+                        if(level.shoot(gunDirection, character.getShotX(), 
+                                character.getShotY())) {
                             mLastShot = now;
                         }
                     }
@@ -239,7 +178,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         private Runnable scoreUpdate = new Runnable() {
             public void run() {
-                scoreText.setText("Score: " + score/100 + "  ");
+                if(scoreText != null)
+                    scoreText.setText("Score: " + score/100 + "  ");
             }
         };
 
@@ -292,10 +232,11 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 this.width = width;
                 this.height = height;
                 character.set(width, height);
-                stars.set(width, height);
+                level.set(width, height);
                 js.set(width, height);
                 background = Bitmap.createScaledBitmap(background, width,
                         height, false);
+                Enemy.set(getResources(), width, height);
             }
         }
 
@@ -306,10 +247,6 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public Paint getPaint() {
             return paint;
-        }
-
-        public Paint getTextStroke() {
-            return textStroke;
         }
 
         public SurfaceHolder getmSurfaceHolder() {
@@ -344,24 +281,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             return character;
         }
 
-        public ArrayList<Enemy> getEnemies() {
-            return enemies;
-        }
-
-        public Stars getStars() {
-            return stars;
-        }
-
-        public Smoke getSmoke() {
-            return smoke;
-        }
-
         public Joystick getJs() {
             return js;
-        }
-
-        public Projectiles getProjectiles() {
-            return projectiles;
         }
 
         public Bitmap getBackground() {
@@ -370,14 +291,6 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public GameState getThreadState() {
             return mState;
-        }
-
-        public double getVX() {
-            return vx;
-        }
-
-        public double getVY() {
-            return vy;
         }
 
         public void setTextView(TextView view) {
@@ -390,8 +303,6 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
-        width = 10000;
-        height = 10000;
         thread = new sector25thread(holder, context, new Handler() {
         });
         setFocusable(true);

@@ -10,7 +10,6 @@ public class Character {
 
     private Point position;
     private Point smokePosition;
-    private Vector velocity;
     private int direction;
     private float directionGun;
     private Sprite spaceman;
@@ -29,7 +28,6 @@ public class Character {
 
     public void set(int width, int height) {
         position = new Point(width / 2, height * 2 / 5);
-        velocity = new Vector(0, 0);
 
         spaceman = new Sprite(Bitmap.createScaledBitmap(man, width / 5,
                 width / 5, false), 2);
@@ -142,6 +140,10 @@ public class Character {
                 spaceman.getWidth() / 15, paint);
 
         canvas.restore();
+    }
+
+    public float[][] getHitBox() {
+        return hitbox;
     }
 
     public boolean testHit(float[] enemy) {

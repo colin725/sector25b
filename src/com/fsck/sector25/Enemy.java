@@ -2,31 +2,37 @@ package com.fsck.sector25;
 
 import java.util.Random;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
 public class Enemy {
 
-    private int width;
-    private int height;
+    private static int width;
+    private static int height;
+    private static Bitmap sprite;
+
     private Point position;
     private Vector velocity;
     private float maxVelocity;
-    private Bitmap sprite;
 
     private static final float hitboxRadius = 15;
 
-    public Enemy(Bitmap enemy, int width, int height, Point characterPos) {
-        sprite = enemy;
+    public Enemy(Point characterPos) {
         position = new Point(0, 0);
         velocity = new Vector(0, 0);
         maxVelocity = 8;
+        setPosition(characterPos);
+    }
+
+    public static void set(Resources res, int screenWidth, int screenHeight) {
+        width = screenWidth;
+        height = screenHeight;
+        sprite = BitmapFactory.decodeResource(res, R.drawable.enemy);
         sprite = Bitmap.createScaledBitmap(sprite, (int) (width / 20),
                 (int) (width / 20), false);
-        this.height = width;
-        this.width = height;
-        setPosition(characterPos);
     }
 
     private void setPosition(Point characterPos) {

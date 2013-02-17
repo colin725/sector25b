@@ -58,8 +58,8 @@ public class Projectiles {
             float[] projectile = projectiles.get(i);
             float xDif = projectile[0] - characterX;
             float yDif = projectile[1] - characterY;
-            if (Math.sqrt(xDif * xDif + yDif * yDif) > maxDistance)
-                projectiles.remove(i);
+            if (Math.sqrt(xDif * xDif + yDif * yDif) > maxDistance);
+                //projectiles.remove(i);
         }
 
         sprite.Update();

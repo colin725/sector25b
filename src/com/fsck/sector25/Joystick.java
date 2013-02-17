@@ -1,12 +1,7 @@
 package com.fsck.sector25;
 
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Paint.Align;
-import android.graphics.Typeface;
-import android.util.Log;
 import android.view.MotionEvent;
 
 public class Joystick {
@@ -27,12 +22,6 @@ public class Joystick {
     /* Tracking ID of input events for each joystick */
     int joystickID1 = -1;
     int joystickID2 = -1;
-
-    /* Last know position of joysticks */
-    private float pointx1 = 0;
-    private float pointy1 = 0;
-    private float pointx2 = 0;
-    private float pointy2 = 0;
 
     public Joystick() {
     }
@@ -81,15 +70,11 @@ public class Joystick {
         if (Math.sqrt((event.getX(ID)-toEdge)*(event.getX(ID)-toEdge) +
                 (event.getY(ID)-(height-toEdge))*(event.getY(ID)-(height-toEdge))) 
                 < widthBig){
-            pointx1 = event.getX(ID);
-            pointy1 = event.getY(ID);
             joystickID1 = ID;
         }
         if (Math.sqrt((event.getX(ID)-(width-toEdge))*(event.getX(ID)-(width-toEdge)) +
                 (event.getY(ID)-(height-toEdge))*(event.getY(ID)-(height-toEdge))) 
                 < widthBig){
-            pointx2 = event.getX(ID);
-            pointy2 = event.getY(ID);
             joystickID2 = ID;
         }
     }
@@ -120,8 +105,6 @@ public class Joystick {
                 x1 = (float) (x1 / a * widthBig);
                 y1 = (float) (y1 / a * widthBig);
             }
-            pointx1 = event.getX(ID);
-            pointy1 = event.getY(ID);
         } else if (event.getPointerId(ID) == joystickID2){
             x2 = event.getX(ID) - (width - toEdge);
             y2 = event.getY(ID) - (height - toEdge);
@@ -130,8 +113,6 @@ public class Joystick {
                 x2 = (float) (x2 / a * widthBig);
                 y2 = (float) (y2 / a * widthBig);
             }
-            pointx2 = event.getX(ID);
-            pointy2 = event.getY(ID);
         }
     }
 
