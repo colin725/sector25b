@@ -15,12 +15,14 @@ public class Level {
     private Stars stars;
     private Smoke smoke;
     private Projectiles projectiles;
+    private Grid grid;
 
     public Level(int level, Resources res) {
         enemies = new ArrayList<Enemy>();
         stars = new Stars(res);
         smoke = new Smoke(res);
         projectiles = new Projectiles(res);
+        grid = new Grid();
     }
 
     public void update(Vector charVelocity, Point characterPos) {
@@ -48,9 +50,11 @@ public class Level {
                 charVelocity.scale(sector25view.VELOCITY_SCALE).getY(),
                 characterPos.getX(), characterPos.getY(), height * 2);
         smoke.update();
+        grid.update(charVelocity.scale(sector25view.VELOCITY_SCALE));
     }
 
     public void draw(Canvas canvas, Paint paint) {
+        grid.draw(canvas, paint);
         stars.draw(canvas, paint);
         smoke.draw(canvas, paint);
         projectiles.draw(canvas, paint);
@@ -79,6 +83,7 @@ public class Level {
         this.width = width;
         this.height = height;
         stars.set(width, height);
+        grid.set(width, height);
     }
 
     public ArrayList<Enemy> getEnemies() {

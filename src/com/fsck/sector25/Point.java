@@ -50,7 +50,12 @@ public class Point {
     public Point move(Vector v) {
         return new Point(this.x + v.getX(), this.y + v.getY());
     }
-    
+
+    public void subtract(Vector v) {
+        this.x -= v.getX();
+        this.y -= v.getY();
+    }
+ 
     public static Point random(){
         return new Point((float) Math.random(), (float) Math.random());
     }
