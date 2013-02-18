@@ -28,7 +28,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     public static final boolean DRAW_HITBOXES = false;
 
     public enum GameState {
-        STATE_PAUSE, STATE_RUNNING
+        STATE_PAUSE, STATE_RUNNING, STATE_MENU
     }
 
     /*
@@ -48,6 +48,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private boolean mRun = false;
         private int height, width;
         private Level level;
+        private Menu menu;
         private Character character;
         private Healthbar healthbar;
         private Joystick js = new Joystick();
@@ -55,7 +56,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         /** states */
 
-        private GameState mState = GameState.STATE_RUNNING;
+        private GameState mState = GameState.STATE_MENU;
 
         public sector25thread(SurfaceHolder surfaceHolder, Context context,
                 Handler handler) {
@@ -68,6 +69,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             paint.setColor(Color.WHITE);
             background = BitmapFactory.decodeResource(res,
                     R.drawable.background);
+            menu = new Menu();
         }
 
         /**
@@ -82,11 +84,21 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                     paint.setAlpha(255);
                     level.draw(canvas, paint);
-                    character.draw(canvas, paint);
-                    js.drawLeft(canvas, paint);
-                    js.drawRight(canvas, paint);
-                    healthbar.draw(canvas, width / 2, height * 9 / 10);
 
+                    if (mState == GameState.STATE_RUNNING) {
+                        js.drawLeft(canvas, paint);
+                        js.drawRight(canvas, paint);
+                        healthbar.draw(canvas, width / 2, height * 9 / 10);
+                    } else if (mState == GameState.STATE_MENU) {
+                        // TODO: Menu
+                        // 1) Animate in and out
+                        // 2) code actual touch targets for buttons
+                        // 3) Add hover differentiation on buttons
+                        // 4) Make character shoot enemies that come near
+                        menu.draw(canvas, paint);
+                    }
+
+                    character.draw(canvas, paint);
                     canvas.restore();
                 }
 
@@ -110,29 +122,41 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                 // Update the default game play
                 if (elapsedFrame > 33) {
-                    Vector charVelocity = new Vector(js.getX1(),js.getY1());
-                    Vector gunDirection = (new Vector(js.getX2(),js.getY2())).normalize();
+                    if (mState == GameState.STATE_RUNNING) {
+                        Vector charVelocity = new Vector(js.getX1(),js.getY1());
+                        Vector gunDirection = (new Vector(js.getX2(),js.getY2())).normalize();
 
-                    //Place holder for score; arcade mode where score
-                    //is determined by distance traveled to the right.
-                    score += js.getX1();
-                    handler.postDelayed(scoreUpdate, 1);
+                        //Place holder for score; arcade mode where score
+                        //is determined by distance traveled to the right.
+                        score += js.getX1();
+                        handler.postDelayed(scoreUpdate, 1);
 
-                    character.update(charVelocity, gunDirection);
-                    level.update(charVelocity, character.getPosition());
-                    mLastTime = now;
+                        character.update(charVelocity, gunDirection);
+                        level.update(charVelocity, character.getPosition());
 
-                    int count = 0;
-                    ArrayList<Integer> remove = new ArrayList<Integer>();
-                    for(Enemy enemy : level.getEnemies()){
-                        if(character.testHit(enemy.getHitBox())) {
-                            healthbar.incrementHealth(-5);
-                            remove.add(count);
+                        int count = 0;
+                        ArrayList<Integer> remove = new ArrayList<Integer>();
+                        for(Enemy enemy : level.getEnemies()){
+                            if(character.testHit(enemy.getHitBox())) {
+                                healthbar.incrementHealth(-5);
+                                remove.add(count);
+                            }
+                            count++;
                         }
-                        count++;
-                    }
-                    for(int i = remove.size() - 1; i >= 0; i--) {
-                        level.removeEnemy(remove.get(i));
+                        for(int i = remove.size() - 1; i >= 0; i--) {
+                            level.removeEnemy(remove.get(i));
+                        }
+
+                        // shoot (place holder, will have to create different
+                        // shots/upgrades)
+                        if (elapsedShot > 100) {
+                            if(level.shoot(gunDirection, character.getShotX(), 
+                                    character.getShotY())) {
+                                mLastShot = now;
+                            }
+                        }
+                    } else if (mState == GameState.STATE_MENU) {
+                        level.update(new Vector(0,0), character.getPosition());
                     }
 
                     // add smoke
@@ -145,14 +169,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         level.addEnemy(character.getPosition());
                     }
 
-                    // shoot (place holder, will have to create different
-                    // shots/upgrades)
-                    if (elapsedShot > 100) {
-                        if(level.shoot(gunDirection, character.getShotX(), 
-                                character.getShotY())) {
-                            mLastShot = now;
-                        }
-                    }
+                    mLastTime = now;
                 }
             }
         }
@@ -164,8 +181,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 try {
                     c = mSurfaceHolder.lockCanvas();
                     synchronized (mSurfaceHolder) {
-                        if (mState == GameState.STATE_RUNNING)
-                            update();
+                        update();
                         doDraw(c);
                     }
                 } finally {
@@ -204,7 +220,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             synchronized (mSurfaceHolder) {
                 mLastTime = System.currentTimeMillis() + 100;
             }
-            setState(GameState.STATE_RUNNING);
+            // TODO: return to last state
+            // setState(GameState.STATE_RUNNING);
         }
 
         public Bundle saveState(Bundle map) {
@@ -232,16 +249,23 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 this.width = width;
                 this.height = height;
                 character.set(width, height);
+                character.setPositionMenu();
                 level.set(width, height);
                 js.set(width, height);
                 background = Bitmap.createScaledBitmap(background, width,
                         height, false);
                 Enemy.set(getResources(), width, height);
+                Menu.set(getResources(), width, height);
             }
         }
 
         public boolean onTouchEvent(MotionEvent event) {
-            js.touch(event);
+            if (mState == GameState.STATE_RUNNING) {
+                js.touch(event);
+            } else {
+                mState = GameState.STATE_RUNNING;
+                character.setPosition();
+            }
             return true;
         }
 

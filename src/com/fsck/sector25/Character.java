@@ -14,6 +14,8 @@ public class Character {
     private float directionGun;
     private Sprite spaceman;
     float[][] hitbox = new float[3][3];
+    private int width;
+    private int height;
     Bitmap man;
     Bitmap arm1;
     Bitmap arm2;
@@ -28,6 +30,8 @@ public class Character {
 
     public void set(int width, int height) {
         position = new Point(width / 2, height * 2 / 5);
+        this.width = width;
+        this.height = height;
 
         spaceman = new Sprite(Bitmap.createScaledBitmap(man, width / 5,
                 width / 5, false), 2);
@@ -43,6 +47,16 @@ public class Character {
         hitbox[0] = new float[] { 0, spaceman.getHeight() / 4, 20 };
         hitbox[1] = new float[] { 0, -spaceman.getHeight() / 7, 30 };
         hitbox[2] = new float[] { 0, 0, 20 };
+    }
+
+    public void setPositionMenu() {
+        position = new Point(width / 3 , height / 2);
+        smokePosition = new Point(getSmokeX(), getSmokeY());
+    }
+
+    public void setPosition() {
+        position = new Point(width / 2, height * 2 / 5);
+        smokePosition = new Point(getSmokeX(), getSmokeY());
     }
 
     public float getShotX() {
@@ -167,4 +181,5 @@ public class Character {
         canvas.drawCircle(position.getX() + hitbox[2][0], position.getY()
                 + hitbox[2][1], hitbox[2][2], paint);
     }
+
 }

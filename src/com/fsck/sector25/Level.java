@@ -54,7 +54,7 @@ public class Level {
     }
 
     public void draw(Canvas canvas, Paint paint) {
-        grid.draw(canvas, paint);
+        //grid.draw(canvas, paint);
         stars.draw(canvas, paint);
         smoke.draw(canvas, paint);
         projectiles.draw(canvas, paint);
