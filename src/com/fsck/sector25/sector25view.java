@@ -46,6 +46,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private long mLastSmoke = 0;
         private long mLastShot = 0;
         private boolean mRun = false;
+        private boolean surfaceSizeSet = false;
         private int height, width;
         private Level level;
         private Menu menu;
@@ -185,7 +186,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     c = mSurfaceHolder.lockCanvas();
                     synchronized (mSurfaceHolder) {
                         update();
-                        doDraw(c);
+                        if (surfaceSizeSet)
+                            doDraw(c);
                     }
                 } finally {
                     if (c != null) {
@@ -259,6 +261,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         height, false);
                 Enemy.set(getResources(), width, height);
                 Menu.set(getResources(), width, height);
+                surfaceSizeSet = true;
             }
         }
 
