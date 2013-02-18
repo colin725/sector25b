@@ -18,12 +18,13 @@ public class Enemy {
     private Vector velocity;
     private float maxVelocity;
 
+    private int aimedAt = 0;
+
     private static final float hitboxRadius = 15;
 
     public Enemy(Point characterPos) {
         position = new Point(0, 0);
         velocity = new Vector(0, 0);
-        maxVelocity = 8;
         setPosition(characterPos);
     }
 
@@ -38,6 +39,7 @@ public class Enemy {
     private void setPosition(Point characterPos) {
         boolean good = false;
         Random r = new Random();
+        maxVelocity = 5 + r.nextFloat() * 5;
         // get new position until it isn't on top of the character
         while (!good) {
             this.position.setX((r.nextFloat() * 2 - 0.5f) * 1.5f * width);
@@ -88,6 +90,26 @@ public class Enemy {
 
     public float getY() {
         return position.getY();
+    }
+
+    public float getVX() {
+        return velocity.getX();
+    }
+
+    public float getVY() {
+        return velocity.getY();
+    }
+
+    public int aimed() {
+        return aimedAt;
+    }
+
+    public void aim() {
+        aimedAt = 1;
+    }
+
+    public void shot() {
+        aimedAt = 2;
     }
 
     public Point getPosition() {

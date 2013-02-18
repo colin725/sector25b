@@ -101,4 +101,38 @@ public class Level {
         }
         return false;
     }
+
+    public Vector menuShoot(Point position, float x, float y) {
+        // Aim at nearest enemy that has not been aimed at.
+        float aimx = 0;
+        float aimy = 0;
+        float distance = height /3;
+        Boolean newTarget = false;
+        int target = 0;
+        int count = 0;
+        for (Enemy enemy : enemies) {
+            if(enemy.aimed() == 0 &&
+                    enemy.getPosition().distance(position) < distance){
+                distance = enemy.getPosition().distance(position);
+                newTarget = true;
+                target = count;
+                aimx = enemy.getX() - position.getX();
+                aimy = enemy.getY() - position.getY();
+            }
+            count++;
+        }
+        Vector aim = new Vector(aimx, aimy);
+
+        for (Enemy enemy : enemies) {
+            if(enemy.aimed() == 1){
+                Point pos = new Point(enemy.getX() + 3 * enemy.getVX()- x,
+                        enemy.getY() + 3 * enemy.getVY() - y);
+                projectiles.add(x, y, pos.getX(), pos.getY());
+                if(newTarget) enemy.shot();
+            }
+        }
+
+        if(newTarget) enemies.get(target).aim();
+        return aim;
+    }
 }

@@ -39,6 +39,7 @@ public class Joystick {
         canvas.drawCircle(toEdge, height - toEdge, widthBig, paint);
         paint.setAlpha(135);
         canvas.drawCircle(toEdge + x1, height - toEdge + y1, widthSmall, paint);
+        paint.setAlpha(255);
     }
 
     public void drawRight(Canvas canvas, Paint paint){
@@ -46,6 +47,7 @@ public class Joystick {
         canvas.drawCircle(width - toEdge, height - toEdge, widthBig, paint);
         paint.setAlpha(135);
         canvas.drawCircle(width - toEdge + x2, height - toEdge + y2, widthSmall, paint);
+        paint.setAlpha(255);
     }
 
     //return X joystick distance from center from -1 to 1

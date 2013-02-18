@@ -156,7 +156,10 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                             }
                         }
                     } else if (mState == GameState.STATE_MENU) {
-                        level.update(new Vector(0,0), character.getPosition());
+                        level.update(new Vector(15,0), character.getPosition());
+                        character.update(new Vector(0, 0), level.menuShoot(
+                                character.getPosition(), character.getShotX(),
+                                character.getShotY()));
                     }
 
                     // add smoke
