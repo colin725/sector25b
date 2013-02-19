@@ -138,4 +138,10 @@ public class Level {
             enemies.get(target).aim();
         return aim;
     }
+
+    public void clear() {
+        enemies = new ArrayList<Enemy>();
+        smoke.clear();
+        projectiles.clear();
+    }
 }

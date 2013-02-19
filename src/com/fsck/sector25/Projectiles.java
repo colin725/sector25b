@@ -77,4 +77,8 @@ public class Projectiles {
         newProjectile[4] = 0; // initial frame
         projectiles.add(newProjectile);
     }
+
+    public void clear() {
+        projectiles = new ArrayList<float[]>();
+    }
 }

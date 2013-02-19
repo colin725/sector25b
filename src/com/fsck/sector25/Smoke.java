@@ -59,4 +59,8 @@ public class Smoke {
             i[1] -= v.getY() / 10;
         }
     }
+
+    public void clear() {
+        smokes = new ArrayList<float[]>();
+    }
 }

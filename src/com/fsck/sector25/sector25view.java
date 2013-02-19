@@ -93,6 +93,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                     if (mState == GameState.STATE_RUNNING) {
                         hud.draw(canvas, paint);
+                        character.draw(canvas, paint);
                     } else if (mState == GameState.STATE_MENU) {
                         // TODO: Menu
                         // 1) Animate in and out
@@ -100,12 +101,14 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         // 3) Add hover differentiation on buttons
                         // 4) Make character shoot enemies that come near
                         menu.draw(canvas, paint);
+                        if (menu.page() == 0 ) 
+                            character.draw(canvas, paint);
                     } else if (mState == GameState.STATE_PAUSE) {
                         hud.draw(canvas, paint);
+                        character.draw(canvas, paint);
                         canvas.drawARGB(155, 0, 0, 0);
                     }
 
-                    character.draw(canvas, paint);
                     canvas.restore();
                 }
 
@@ -173,6 +176,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         character.update(new Vector(0, 0), level.menuShoot(
                                 character.getPosition(), character.getShotX(),
                                 character.getShotY()));
+                        if (menu.page() == 1) {
+                            level.clear();
+                        }
                     } else if (mState == GameState.STATE_PAUSE) {
                         level.update(new Vector(15, 0),
                                 character.getPosition(), true);
@@ -180,12 +186,14 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                     // add smoke
                     if (elapsedSmoke > 300) {
-                        level.addSmoke(character.getSmokePosition(),
+                        if (!(mState == GameState.STATE_MENU &&
+                                menu.page() == 1)) {
+                            level.addSmoke(character.getSmokePosition(),
                                 character.getSmokeVelocity());
+                            // placeholder adding enemies
+                            level.addEnemy(character.getPosition());
+                        }
                         mLastSmoke = now;
-
-                        // placeholder adding enemies
-                        level.addEnemy(character.getPosition());
                     }
 
                     mLastTime = now;
@@ -278,9 +286,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 hud.touch(event);
             } else if (mState == GameState.STATE_PAUSE) {
                 mState = GameState.STATE_RUNNING;
-            } else {
-                mState = GameState.STATE_RUNNING;
-                character.setPosition();
+            } else if (mState == GameState.STATE_MENU) {
+                menu.touch(event);
             }
             return true;
         }
@@ -339,6 +346,11 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public GameHUD getHUD() {
             return hud;
+        }
+
+        public void startGame() {
+            mState = GameState.STATE_RUNNING;
+            character.setPosition();
         }
 
         // public void setTextView(TextView view) {
@@ -410,6 +422,10 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
     public static void setGameState(GameState state) {
         thread.setThreadState(state);
+    }
+
+    public static void startGame() {
+        thread.startGame();
     }
 
     public static GameState getGameState() {
