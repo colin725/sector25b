@@ -54,8 +54,7 @@ public class GameHUD {
     }
 
     public void touch(MotionEvent event) {
-        if (within(event, pause_point1, pause_point2)
-                && sector25view.getGameState() == sector25view.GameState.STATE_RUNNING) {
+        if (within(event, pause_point1, pause_point2)) {
             // show pause menu
             // TODO: figure out the best way to change state to paused, for now
             // just set it
