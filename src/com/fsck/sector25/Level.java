@@ -25,36 +25,37 @@ public class Level {
         grid = new Grid();
     }
 
-    public void update(Vector charVelocity, Point characterPos) {
+    public void update(Vector charVelocity, Point characterPos, boolean paused) {
         stars.move(charVelocity);
         if (charVelocity.isZero())
             stars.move(Vector.random());
         smoke.move(charVelocity);
+        if (!paused) {
+            for (int i = enemies.size() - 1; i >= 0; i--) {
+                Enemy enemy = enemies.get(i);
+                enemy.update(charVelocity.scale(sector25view.VELOCITY_SCALE),
+                        characterPos);
 
-        for (int i = enemies.size() - 1; i >= 0; i--) {
-            Enemy enemy = enemies.get(i);
-            enemy.update(charVelocity.scale(sector25view.VELOCITY_SCALE),
-                    characterPos);
-
-            // check for hits
-            if (projectiles.testHit(enemy.getHitBox())) {
-                enemies.remove(i);
-              smoke.add(enemy.getPosition(), Vector.zero());
-            } else {
-                enemies.set(i, enemy);
+                // check for hits
+                if (projectiles.testHit(enemy.getHitBox())) {
+                    enemies.remove(i);
+                    smoke.add(enemy.getPosition(), Vector.zero());
+                } else {
+                    enemies.set(i, enemy);
+                }
             }
-        }
 
-        projectiles.update(charVelocity.scale(sector25view.VELOCITY_SCALE)
-                .getX(),
-                charVelocity.scale(sector25view.VELOCITY_SCALE).getY(),
-                characterPos.getX(), characterPos.getY(), height * 2);
+            projectiles.update(charVelocity.scale(sector25view.VELOCITY_SCALE)
+                    .getX(), charVelocity.scale(sector25view.VELOCITY_SCALE)
+                    .getY(), characterPos.getX(), characterPos.getY(),
+                    height * 2);
+        }
         smoke.update();
         grid.update(charVelocity.scale(sector25view.VELOCITY_SCALE));
     }
 
     public void draw(Canvas canvas, Paint paint) {
-        //grid.draw(canvas, paint);
+        // grid.draw(canvas, paint);
         stars.draw(canvas, paint);
         smoke.draw(canvas, paint);
         projectiles.draw(canvas, paint);
@@ -90,7 +91,7 @@ public class Level {
         return enemies;
     }
 
-    public void removeEnemy(int i){
+    public void removeEnemy(int i) {
         enemies.remove(i);
     }
 
@@ -106,13 +107,13 @@ public class Level {
         // Aim at nearest enemy that has not been aimed at.
         float aimx = 0;
         float aimy = 0;
-        float distance = height /3;
+        float distance = height / 3;
         Boolean newTarget = false;
         int target = 0;
         int count = 0;
         for (Enemy enemy : enemies) {
-            if(enemy.aimed() == 0 &&
-                    enemy.getPosition().distance(position) < distance){
+            if (enemy.aimed() == 0
+                    && enemy.getPosition().distance(position) < distance) {
                 distance = enemy.getPosition().distance(position);
                 newTarget = true;
                 target = count;
@@ -124,15 +125,17 @@ public class Level {
         Vector aim = new Vector(aimx, aimy);
 
         for (Enemy enemy : enemies) {
-            if(enemy.aimed() == 1){
-                Point pos = new Point(enemy.getX() + 3 * enemy.getVX()- x,
+            if (enemy.aimed() == 1) {
+                Point pos = new Point(enemy.getX() + 3 * enemy.getVX() - x,
                         enemy.getY() + 3 * enemy.getVY() - y);
                 projectiles.add(x, y, pos.getX(), pos.getY());
-                if(newTarget) enemy.shot();
+                if (newTarget)
+                    enemy.shot();
             }
         }
 
-        if(newTarget) enemies.get(target).aim();
+        if (newTarget)
+            enemies.get(target).aim();
         return aim;
     }
 }

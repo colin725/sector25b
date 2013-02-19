@@ -3,6 +3,8 @@ package com.fsck.sector25;
 import java.lang.Thread.State;
 import java.util.ArrayList;
 
+import com.fsck.sector25.sector25view.GameState;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -20,7 +22,7 @@ import android.widget.TextView;
 
 class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
-    private sector25thread thread;
+    private static sector25thread thread;
     @SuppressWarnings("unused")
     private String TAG = "sector25";
 
@@ -98,6 +100,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         // 3) Add hover differentiation on buttons
                         // 4) Make character shoot enemies that come near
                         menu.draw(canvas, paint);
+                    } else if (mState == GameState.STATE_PAUSE) {
+                        hud.draw(canvas, paint);
+                        canvas.drawARGB(155, 0, 0, 0);
                     }
 
                     character.draw(canvas, paint);
@@ -137,7 +142,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         hud.update();
 
                         character.update(charVelocity, gunDirection);
-                        level.update(charVelocity, character.getPosition());
+                        level.update(charVelocity, character.getPosition(),
+                                false);
 
                         int count = 0;
                         ArrayList<Integer> remove = new ArrayList<Integer>();
@@ -162,10 +168,14 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                             }
                         }
                     } else if (mState == GameState.STATE_MENU) {
-                        level.update(new Vector(15, 0), character.getPosition());
+                        level.update(new Vector(15, 0),
+                                character.getPosition(), false);
                         character.update(new Vector(0, 0), level.menuShoot(
                                 character.getPosition(), character.getShotX(),
                                 character.getShotY()));
+                    } else if (mState == GameState.STATE_PAUSE) {
+                        level.update(new Vector(15, 0),
+                                character.getPosition(), true);
                     }
 
                     // add smoke
@@ -266,6 +276,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         public boolean onTouchEvent(MotionEvent event) {
             if (mState == GameState.STATE_RUNNING) {
                 hud.touch(event);
+            } else if (mState == GameState.STATE_PAUSE) {
+                mState = GameState.STATE_RUNNING;
             } else {
                 mState = GameState.STATE_RUNNING;
                 character.setPosition();
@@ -319,6 +331,10 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public GameState getThreadState() {
             return mState;
+        }
+
+        void setThreadState(GameState state) {
+            this.mState = state;
         }
 
         public GameHUD getHUD() {
@@ -390,6 +406,14 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return thread.onTouchEvent(event);
+    }
+
+    public static void setGameState(GameState state) {
+        thread.setThreadState(state);
+    }
+
+    public static GameState getGameState() {
+        return thread.getThreadState();
     }
 
 }
