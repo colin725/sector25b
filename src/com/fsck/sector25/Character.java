@@ -50,7 +50,7 @@ public class Character {
     }
 
     public void setPositionMenu() {
-        position = new Point(width / 3 , height / 2);
+        position = new Point(width / 3, height / 2);
         smokePosition = new Point(getSmokeX(), getSmokeY());
     }
 
@@ -69,6 +69,14 @@ public class Character {
         float shoty = (float) (spaceman.getWidth() * 2 / 3 * Math.sin(Math
                 .toRadians(directionGun)));
         return position.getY() + shoty;
+    }
+
+    public Vector getShot() {
+        float shotx = (float) (spaceman.getWidth() * 2 / 3 * Math.cos(Math
+                .toRadians(directionGun)));
+        float shoty = (float) (spaceman.getWidth() * 2 / 3 * Math.sin(Math
+                .toRadians(directionGun)));
+        return new Vector(shotx, shoty);
     }
 
     private float getSmokeX() {
@@ -131,6 +139,8 @@ public class Character {
 
         smokePosition.setX(getSmokeX());
         smokePosition.setY(getSmokeY());
+
+//        position = position.move(velocity);
 
     }
 

@@ -21,7 +21,7 @@ public class sector25activity extends Activity {
         setContentView(R.layout.s25);
 
         sector25view = (sector25view) findViewById(R.id.s25);
-        sector25view.getThread().setTextView((TextView)findViewById(R.id.ScoreText));
+        sector25view.getThread().getHUD().setTextView((TextView)findViewById(R.id.ScoreText));
         if(savedInstanceState != null){
             sector25view.getThread().restoreState(savedInstanceState);
         }

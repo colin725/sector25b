@@ -36,9 +36,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
      */
     class sector25thread extends Thread {
 
-        //TODO: Make handler static to avoid memory leaks!
+        // TODO: Make handler static to avoid memory leaks!
         private Handler handler;
-        private TextView scoreText;
+        // private TextView scoreText;
         private int score;
         private Paint paint = new Paint();
         private SurfaceHolder mSurfaceHolder = null;
@@ -51,8 +51,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Level level;
         private Menu menu;
         private Character character;
+        private GameHUD hud;
         private Healthbar healthbar;
-        private Joystick js = new Joystick();
+        // private Joystick js = new Joystick();
         private Bitmap background;
 
         /** states */
@@ -64,6 +65,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             Resources res = context.getResources();
             this.handler = handler;
             mSurfaceHolder = surfaceHolder;
+            hud = new GameHUD(context, handler);
             character = new Character(res);
             healthbar = new Healthbar(res);
             level = new Level(0, res);
@@ -71,6 +73,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             background = BitmapFactory.decodeResource(res,
                     R.drawable.background);
             menu = new Menu();
+
         }
 
         /**
@@ -87,9 +90,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     level.draw(canvas, paint);
 
                     if (mState == GameState.STATE_RUNNING) {
-                        js.drawLeft(canvas, paint);
-                        js.drawRight(canvas, paint);
-                        healthbar.draw(canvas, width / 2, height * 9 / 10);
+                        hud.draw(canvas, paint);
                     } else if (mState == GameState.STATE_MENU) {
                         // TODO: Menu
                         // 1) Animate in and out
@@ -123,41 +124,45 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                 // Update the default game play
                 if (elapsedFrame > 33) {
-                    if (mState == GameState.STATE_RUNNING) {
-                        Vector charVelocity = new Vector(js.getX1(),js.getY1());
-                        Vector gunDirection = (new Vector(js.getX2(),js.getY2())).normalize();
 
-                        //Place holder for score; arcade mode where score
-                        //is determined by distance traveled to the right.
-                        score += js.getX1();
-                        handler.postDelayed(scoreUpdate, 1);
+                    if (mState == GameState.STATE_RUNNING) {
+                        Vector charVelocity = hud.getLeftVector();
+                        Vector gunDirection = hud.getRightVector().normalize();
+
+                        // Place holder for score; arcade mode where score
+                        // is determined by distance traveled to the right.
+                        score += charVelocity.getX();
+                        hud.setScore(score);
+
+                        hud.update();
 
                         character.update(charVelocity, gunDirection);
                         level.update(charVelocity, character.getPosition());
 
                         int count = 0;
                         ArrayList<Integer> remove = new ArrayList<Integer>();
-                        for(Enemy enemy : level.getEnemies()){
-                            if(character.testHit(enemy.getHitBox())) {
-                                healthbar.incrementHealth(-5);
+                        for (Enemy enemy : level.getEnemies()) {
+                            if (character.testHit(enemy.getHitBox())) {
+                                hud.getHealthbar().incrementHealth(-5);
                                 remove.add(count);
                             }
                             count++;
                         }
-                        for(int i = remove.size() - 1; i >= 0; i--) {
+                        for (int i = remove.size() - 1; i >= 0; i--) {
                             level.removeEnemy(remove.get(i));
+
                         }
 
                         // shoot (place holder, will have to create different
                         // shots/upgrades)
                         if (elapsedShot > 100) {
-                            if(level.shoot(gunDirection, character.getShotX(), 
+                            if (level.shoot(gunDirection, character.getShotX(),
                                     character.getShotY())) {
                                 mLastShot = now;
                             }
                         }
                     } else if (mState == GameState.STATE_MENU) {
-                        level.update(new Vector(15,0), character.getPosition());
+                        level.update(new Vector(15, 0), character.getPosition());
                         character.update(new Vector(0, 0), level.menuShoot(
                                 character.getPosition(), character.getShotX(),
                                 character.getShotY()));
@@ -196,13 +201,6 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
         }
-
-        private Runnable scoreUpdate = new Runnable() {
-            public void run() {
-                if(scoreText != null)
-                    scoreText.setText("Score: " + score/100 + "  ");
-            }
-        };
 
         public void setRunning(boolean b) {
             mRun = b;
@@ -256,7 +254,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 character.set(width, height);
                 character.setPositionMenu();
                 level.set(width, height);
-                js.set(width, height);
+                hud.set(width, height);
                 background = Bitmap.createScaledBitmap(background, width,
                         height, false);
                 Enemy.set(getResources(), width, height);
@@ -267,7 +265,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public boolean onTouchEvent(MotionEvent event) {
             if (mState == GameState.STATE_RUNNING) {
-                js.touch(event);
+                hud.touch(event);
             } else {
                 mState = GameState.STATE_RUNNING;
                 character.setPosition();
@@ -311,9 +309,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             return character;
         }
 
-        public Joystick getJs() {
-            return js;
-        }
+        // public Joystick getJs() {
+        // return js;
+        // }
 
         public Bitmap getBackground() {
             return background;
@@ -323,9 +321,13 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             return mState;
         }
 
-        public void setTextView(TextView view) {
-            scoreText = view;
+        public GameHUD getHUD() {
+            return hud;
         }
+
+        // public void setTextView(TextView view) {
+        // scoreText = view;
+        // }
     }
 
     public sector25view(Context context, AttributeSet attrs) {
@@ -361,9 +363,10 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
-        if (!(thread.getState() == State.NEW)){
-            thread = new sector25thread(holder, this.getContext(), new Handler() {
-            });
+        if (!(thread.getState() == State.NEW)) {
+            thread = new sector25thread(holder, this.getContext(),
+                    new Handler() {
+                    });
         }
         thread.setRunning(true);
         thread.start();

@@ -52,6 +52,8 @@ public class Enemy {
 
     public void update(Vector charVelocity, Point characterPos) {
 
+        // Calculate direction, scale up to velocity, subtract char velocity,
+        // add small amount of randomness
         velocity = position.unitVecTo(characterPos).scale(maxVelocity)
                 .sub(charVelocity).add(Vector.random());
 
