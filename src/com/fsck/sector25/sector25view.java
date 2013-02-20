@@ -101,7 +101,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         // 3) Add hover differentiation on buttons
                         // 4) Make character shoot enemies that come near
                         menu.draw(canvas, paint);
-                        if (menu.page() == 0 ) 
+                        if (menu.page() == 0)
                             character.draw(canvas, paint);
                     } else if (mState == GameState.STATE_PAUSE) {
                         hud.draw(canvas, paint);
@@ -186,10 +186,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                     // add smoke
                     if (elapsedSmoke > 300) {
-                        if (!(mState == GameState.STATE_MENU &&
-                                menu.page() == 1)) {
+                        if (!(mState == GameState.STATE_MENU && menu.page() == 1)) {
                             level.addSmoke(character.getSmokePosition(),
-                                character.getSmokeVelocity());
+                                    character.getSmokeVelocity());
                             // placeholder adding enemies
                             level.addEnemy(character.getPosition());
                         }
@@ -275,7 +274,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 hud.set(width, height);
                 background = Bitmap.createScaledBitmap(background, width,
                         height, false);
-                Enemy.set(getResources(), width, height);
+                // need to do this for every enemy type
+                Cylon.set(getResources(), width, height);
                 Menu.set(getResources(), width, height);
                 surfaceSizeSet = true;
             }

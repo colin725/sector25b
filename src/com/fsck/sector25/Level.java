@@ -82,7 +82,7 @@ public class Level {
     public void addEnemy(Point characterPos) {
         if (enemies.size() < 100)
             //random health between 1 and 4
-            enemies.add(new Enemy(characterPos, ((int) (Math.random() * 3) + 1)));
+            enemies.add(new Cylon(characterPos, ((int) (Math.random() * 3) + 1)));
     }
 
     public void set(int width, int height) {
