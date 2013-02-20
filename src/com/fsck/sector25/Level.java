@@ -38,6 +38,10 @@ public class Level {
 
                 // check for hits
                 if (projectiles.testHit(enemy.getHitBox())) {
+                    enemy.takeDamage(1);
+                }
+                
+                if (enemy.isDead()) {
                     enemies.remove(i);
                     smoke.add(enemy.getPosition(), Vector.zero());
                 } else {
@@ -77,7 +81,8 @@ public class Level {
 
     public void addEnemy(Point characterPos) {
         if (enemies.size() < 100)
-            enemies.add(new Enemy(characterPos));
+            //random health between 1 and 4
+            enemies.add(new Enemy(characterPos, ((int) (Math.random() * 3) + 1)));
     }
 
     public void set(int width, int height) {
@@ -112,13 +117,14 @@ public class Level {
         int target = 0;
         int count = 0;
         for (Enemy enemy : enemies) {
-            if (enemy.aimed() == 0
+            if ((enemy.aimed() == 0 || !enemy.isDead())
                     && enemy.getPosition().distance(position) < distance) {
                 distance = enemy.getPosition().distance(position);
                 newTarget = true;
-                target = count;
+                target = enemies.indexOf(enemy);;
                 aimx = enemy.getX() - position.getX();
                 aimy = enemy.getY() - position.getY();
+                break;
             }
             count++;
         }

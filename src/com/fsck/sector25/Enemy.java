@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 
 public class Enemy {
@@ -17,15 +18,19 @@ public class Enemy {
     private Point position;
     private Vector velocity;
     private float maxVelocity;
+    private int currHealth;
+    private int maxHealth;
 
     private int aimedAt = 0;
 
     private static final float hitboxRadius = 15;
 
-    public Enemy(Point characterPos) {
+    public Enemy(Point characterPos, int maxHealth) {
         position = new Point(0, 0);
         velocity = new Vector(0, 0);
         setPosition(characterPos);
+        this.maxHealth = maxHealth;
+        this.currHealth = maxHealth;
     }
 
     public static void set(Resources res, int screenWidth, int screenHeight) {
@@ -79,11 +84,36 @@ public class Enemy {
 
         canvas.drawBitmap(sprite, -sprite.getWidth() / 2,
                 -sprite.getHeight() / 2, paint);
+        int color = paint.getColor();
+        if (((float) currHealth) / ((float) maxHealth) <= .2
+                || (currHealth == 1 && maxHealth > 1)) {
+            paint.setColor(Color.RED);
+        } else if (((float) currHealth) / ((float) maxHealth) <= .5) {
+            paint.setColor(Color.YELLOW);
+        } else {
+            paint.setColor(Color.GREEN);
+        }
+        canvas.drawRect(-sprite.getWidth() / 2, -sprite.getHeight() + 5,
+                sprite.getWidth() / 2, -sprite.getHeight(), paint);
+        // Draw text health large
+        // paint.setTextSize(50);
+        // canvas.drawText("" + currHealth, -sprite.getWidth() / 2,
+        // -sprite.getHeight() + 5, paint);
+
+        paint.setColor(color);
         canvas.restore();
     }
 
     public void drawHit(Canvas canvas, Paint paint) {
         canvas.drawCircle(position.getX(), position.getY(), hitboxRadius, paint);
+    }
+
+    public void takeDamage(int damage) {
+        this.currHealth -= damage;
+    }
+
+    public boolean isDead() {
+        return currHealth <= 0;
     }
 
     public float getX() {
@@ -116,5 +146,13 @@ public class Enemy {
 
     public Point getPosition() {
         return position;
+    }
+
+    public int getCurrHealth() {
+        return currHealth;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
     }
 }
