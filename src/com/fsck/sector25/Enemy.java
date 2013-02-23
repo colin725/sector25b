@@ -13,14 +13,13 @@ public abstract class Enemy {
 
     protected static int width;
     protected static int height;
-    protected static Bitmap sprite;
 
     protected Point position;
     protected Vector velocity;
     protected float maxVelocity;
     protected int currHealth;
     protected int maxHealth;
-    protected static int enemyDrawable;
+    protected int score;
 
     private int aimedAt = 0;
 
@@ -43,7 +42,6 @@ public abstract class Enemy {
     protected void setPosition(Point characterPos) {
         boolean good = false;
         Random r = new Random();
-        maxVelocity = 5 + r.nextFloat() * 5;
         // get new position until it isn't on top of the character
         while (!good) {
             this.position.setX((r.nextFloat() * 2 - 0.5f) * 1.5f * width);
@@ -92,5 +90,9 @@ public abstract class Enemy {
 
     public int getMaxHealth() {
         return maxHealth;
+    }
+
+    public int getScore() {
+        return score;
     }
 }

@@ -57,25 +57,26 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Healthbar healthbar;
         // private Joystick js = new Joystick();
         private Bitmap background;
+        private sector25view parentView;
 
         /** states */
 
         private GameState mState = GameState.STATE_MENU;
 
         public sector25thread(SurfaceHolder surfaceHolder, Context context,
-                Handler handler) {
+                Handler handler, sector25view parentView) {
+            this.parentView = parentView;
             Resources res = context.getResources();
             this.handler = handler;
             mSurfaceHolder = surfaceHolder;
             hud = new GameHUD(context, handler);
             character = new Character(res);
             healthbar = new Healthbar(res);
-            level = new Level(0, res);
+            level = new Level(0, res, this.parentView);
             paint.setColor(Color.WHITE);
             background = BitmapFactory.decodeResource(res,
                     R.drawable.background);
             menu = new Menu();
-
         }
 
         /**
@@ -139,7 +140,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                         // Place holder for score; arcade mode where score
                         // is determined by distance traveled to the right.
-                        score += charVelocity.getX();
+                        // score += charVelocity.getX();
                         hud.setScore(score);
 
                         hud.update();
@@ -274,8 +275,10 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 hud.set(width, height);
                 background = Bitmap.createScaledBitmap(background, width,
                         height, false);
-                // need to do this for every enemy type
+                // need to do this for every enemy type, not sure if there is a
+                // better way.
                 Cylon.set(getResources(), width, height);
+                Wyrm.set(getResources(), width, height);
                 Menu.set(getResources(), width, height);
                 surfaceSizeSet = true;
             }
@@ -328,10 +331,6 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             return character;
         }
 
-        // public Joystick getJs() {
-        // return js;
-        // }
-
         public Bitmap getBackground() {
             return background;
         }
@@ -353,9 +352,11 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             character.setPosition();
         }
 
-        // public void setTextView(TextView view) {
-        // scoreText = view;
-        // }
+        public void notifyEnemyDead(Enemy enemy) {
+            score += enemy.getScore();
+
+        }
+
     }
 
     public sector25view(Context context, AttributeSet attrs) {
@@ -364,7 +365,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
         thread = new sector25thread(holder, context, new Handler() {
-        });
+        }, this);
         setFocusable(true);
     }
 
@@ -394,7 +395,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         if (!(thread.getState() == State.NEW)) {
             thread = new sector25thread(holder, this.getContext(),
                     new Handler() {
-                    });
+                    }, this);
         }
         thread.setRunning(true);
         thread.start();

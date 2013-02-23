@@ -1,7 +1,5 @@
 package com.fsck.sector25;
 
-import com.fsck.sector25.sector25view.GameState;
-
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -32,8 +30,9 @@ public class Menu {
         map = BitmapFactory.decodeResource(res, R.drawable.map1);
         map = Bitmap.createScaledBitmap(map, width, height, false);
         select = BitmapFactory.decodeResource(res, R.drawable.selected);
-        select = Bitmap.createScaledBitmap(select, (int) (menu.getHeight() / 13.75),
-                (int) (menu.getHeight() / 7), false);
+        select = Bitmap.createScaledBitmap(select,
+                (int) (menu.getHeight() / 13.75), (int) (menu.getHeight() / 7),
+                false);
         buttons = new int[][] {
                 { width / 5 * 3, height / 15, width, height / 10 * 3 },
                 { width / 5 * 3, height / 10 * 3, width, height / 2 },
@@ -42,10 +41,11 @@ public class Menu {
     }
 
     public void draw(Canvas canvas, Paint paint) {
-        if(page == 0) {
+        if (page == 0) {
             canvas.drawBitmap(menu, width - menu.getWidth(), 0, paint);
-            if(selected > 0) {
-                canvas.drawBitmap(select, width - select.getWidth(), selected * height / 4.45f - height / 8 , paint);
+            if (selected > 0) {
+                canvas.drawBitmap(select, width - select.getWidth(), selected
+                        * height / 4.45f - height / 8, paint);
             }
         } else if (page == 1) {
             canvas.drawBitmap(map, 0, 0, paint);
@@ -54,9 +54,9 @@ public class Menu {
 
     private void select(float x, float y) {
         selected = 0;
-        for(int i = 0; i < buttons.length; i++) {
-            if ( x > buttons[i][0] && x < buttons[i][2] &&
-                    y > buttons[i][1] && y < buttons[i][3]){
+        for (int i = 0; i < buttons.length; i++) {
+            if (x > buttons[i][0] && x < buttons[i][2] && y > buttons[i][1]
+                    && y < buttons[i][3]) {
                 selected = i + 1;
             }
         }
@@ -70,8 +70,23 @@ public class Menu {
         }
 
         if (eventAction == MotionEvent.ACTION_UP) {
-            if (selected == 1 && page == 0) {
-                page = 1;
+
+            if (page == 0) {
+                switch (selected) {
+                case 1:
+                    // Play
+                    page = 1;
+                    break;
+                case 2:
+                    // Arcade
+                    break;
+                case 3:
+                    // Scores
+                    break;
+                case 4:
+                    // About
+                    break;
+                }
             } else if (page == 1) {
                 sector25view.startGame();
             }

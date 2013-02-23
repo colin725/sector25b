@@ -72,4 +72,11 @@ public class Vector {
         return new Vector(0, 0);
     }
 
+    public Vector rotate(float radians) {
+        float x_p = (float) (Math.cos(radians) * this.x - Math.sin(radians)
+                * this.y);
+        float y_p = (float) (Math.sin(radians) * this.x + Math.cos(radians)
+                * this.y);
+        return new Vector(x_p, y_p);
+    }
 }

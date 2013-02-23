@@ -54,7 +54,7 @@ public class GameHUD {
     }
 
     public void touch(MotionEvent event) {
-        if (within(event, pause_point1, pause_point2)) {
+        if (inBounds(event, pause_point1, pause_point2)) {
             // show pause menu
             // TODO: figure out the best way to change state to paused, for now
             // just set it
@@ -67,7 +67,7 @@ public class GameHUD {
         }
     }
 
-    private boolean within(MotionEvent event, Point p1, Point p2) {
+    private boolean inBounds(MotionEvent event, Point p1, Point p2) {
         if (event.getX() > p1.getX() && event.getX() < p2.getX()
                 && event.getY() > p1.getY() && event.getY() < p2.getY()) {
             return true;
@@ -79,7 +79,7 @@ public class GameHUD {
         public void run() {
 
             if (scoreText != null)
-                scoreText.setText("Score: " + score / 100 + "  ");
+                scoreText.setText("Score: " + score + "  ");
         }
     };
 

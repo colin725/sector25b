@@ -16,13 +16,15 @@ public class Level {
     private Smoke smoke;
     private Projectiles projectiles;
     private Grid grid;
+    private sector25view view;
 
-    public Level(int level, Resources res) {
+    public Level(int level, Resources res, sector25view parentView) {
         enemies = new ArrayList<Enemy>();
         stars = new Stars(res);
         smoke = new Smoke(res);
         projectiles = new Projectiles(res);
         grid = new Grid();
+        view = parentView;
     }
 
     public void update(Vector charVelocity, Point characterPos, boolean paused) {
@@ -40,10 +42,11 @@ public class Level {
                 if (projectiles.testHit(enemy.getHitBox())) {
                     enemy.takeDamage(1);
                 }
-                
+
                 if (enemy.isDead()) {
                     enemies.remove(i);
                     smoke.add(enemy.getPosition(), Vector.zero());
+                    view.getThread().notifyEnemyDead(enemy);
                 } else {
                     enemies.set(i, enemy);
                 }
@@ -81,8 +84,12 @@ public class Level {
 
     public void addEnemy(Point characterPos) {
         if (enemies.size() < 100)
-            //random health between 1 and 4
-            enemies.add(new Cylon(characterPos, ((int) (Math.random() * 3) + 1)));
+            if (enemies.size() % 2 == 0) {
+                // every 10th enemy is a Wyrm
+                enemies.add(new Wyrm(characterPos, 5));
+            } else {
+                enemies.add(new Cylon(characterPos, 1));
+            }
     }
 
     public void set(int width, int height) {
@@ -121,7 +128,8 @@ public class Level {
                     && enemy.getPosition().distance(position) < distance) {
                 distance = enemy.getPosition().distance(position);
                 newTarget = true;
-                target = enemies.indexOf(enemy);;
+                target = enemies.indexOf(enemy);
+                ;
                 aimx = enemy.getX() - position.getX();
                 aimy = enemy.getY() - position.getY();
                 break;
