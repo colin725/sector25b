@@ -55,6 +55,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Bitmap background;
         private Context context;
         private sector25view parentView;
+        private DataStore store;
 
         /** states */
 
@@ -77,6 +78,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     R.drawable.background);
             menu = new Menu();
             menu.setHealth(hud.getHealthbar());
+            store = new DataStore(1, context);
+
         }
 
         /**
@@ -291,7 +294,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public synchronized void restoreState(Bundle savedState) {
             synchronized (mSurfaceHolder) {
-                //setState(GameState.STATE_PAUSE);
+                // setState(GameState.STATE_PAUSE);
                 // TODO: add restore stuff; example:
                 // mX = savedState.getDouble(KEY_X);
             }
@@ -388,7 +391,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             score = 0;
             level.setLevel(0);
             character.reset();
-            mState = GameState.STATE_RUNNING;            
+            mState = GameState.STATE_RUNNING;
         }
 
         public void notifyEnemyDead(Enemy enemy) {
