@@ -16,6 +16,7 @@ public class Wyrm extends Enemy {
     protected static int enemyDrawable;
     private int rotationDirection;
     private Point rotationCenter;
+    private static final boolean healthbars = false;
 
     static {
         enemyDrawable = R.drawable.alien;
@@ -77,24 +78,26 @@ public class Wyrm extends Enemy {
 
         canvas.drawBitmap(sprite, -sprite.getWidth() / 2,
                 -sprite.getHeight() / 2, paint);
-        int color = paint.getColor();
-        float healthRatio = ((float) currHealth) / ((float) maxHealth);
-        if (healthRatio <= .2 || (currHealth == 1 && maxHealth > 1)) {
-            paint.setColor(Color.RED);
-        } else if (healthRatio <= .5) {
-            paint.setColor(Color.YELLOW);
-        } else {
-            paint.setColor(Color.GREEN);
-        }
-        canvas.drawRect(-sprite.getWidth() / 2, -sprite.getHeight() + 5,
-                -(sprite.getWidth() / 2) + (healthRatio * (sprite.getWidth())),
-                -sprite.getHeight(), paint);
-        // Draw text health large
-        // paint.setTextSize(50);
-        // canvas.drawText("" + currHealth, -sprite.getWidth() / 2,
-        // -sprite.getHeight() + 5, paint);
+        if (healthbars) {
+            int color = paint.getColor();
+            float healthRatio = ((float) currHealth) / ((float) maxHealth);
+            if (healthRatio <= .2 || (currHealth == 1 && maxHealth > 1)) {
+                paint.setColor(Color.RED);
+            } else if (healthRatio <= .5) {
+                paint.setColor(Color.YELLOW);
+            } else {
+                paint.setColor(Color.GREEN);
+            }
+            canvas.drawRect(-sprite.getWidth() / 2, -sprite.getHeight() + 5,
+                    -(sprite.getWidth() / 2) + (healthRatio * (sprite.getWidth())),
+                    -sprite.getHeight(), paint);
+            // Draw text health large
+            // paint.setTextSize(50);
+            // canvas.drawText("" + currHealth, -sprite.getWidth() / 2,
+            // -sprite.getHeight() + 5, paint);
 
-        paint.setColor(color);
+            paint.setColor(color);
+        }
         canvas.restore();
 
     }

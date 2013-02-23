@@ -3,8 +3,6 @@ package com.fsck.sector25;
 import java.lang.Thread.State;
 import java.util.ArrayList;
 
-import com.fsck.sector25.sector25view.GameState;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -12,13 +10,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.TextView;
 
 class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -54,7 +52,6 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Menu menu;
         private Character character;
         private GameHUD hud;
-        private Healthbar healthbar;
         // private Joystick js = new Joystick();
         private Bitmap background;
         private sector25view parentView;
@@ -71,12 +68,14 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             mSurfaceHolder = surfaceHolder;
             hud = new GameHUD(context, handler);
             character = new Character(res);
-            healthbar = new Healthbar(res);
             level = new Level(0, res, this.parentView);
             paint.setColor(Color.WHITE);
+            paint.setTextSize(32);
+            paint.setTypeface(Typeface.DEFAULT_BOLD);
             background = BitmapFactory.decodeResource(res,
                     R.drawable.background);
             menu = new Menu();
+            menu.setHealth(hud.getHealthbar());
         }
 
         /**
@@ -257,7 +256,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public synchronized void restoreState(Bundle savedState) {
             synchronized (mSurfaceHolder) {
-                setState(GameState.STATE_PAUSE);
+                //setState(GameState.STATE_PAUSE);
                 // TODO: add restore stuff; example:
                 // mX = savedState.getDouble(KEY_X);
             }

@@ -2,11 +2,8 @@ package com.fsck.sector25;
 
 import java.util.Random;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 
 public abstract class Enemy {
