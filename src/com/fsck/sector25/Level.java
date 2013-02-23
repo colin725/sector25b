@@ -158,4 +158,12 @@ public class Level {
         smoke.clear();
         projectiles.clear();
     }
+
+    public void setLevel(int i) {
+        stars.set(width, height);
+        grid.set(width, height);
+        enemies.clear();
+        projectiles.clear();
+        
+    }
 }

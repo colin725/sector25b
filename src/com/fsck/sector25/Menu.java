@@ -280,4 +280,8 @@ public class Menu {
     public int page() {
         return page;
     }
+    
+    public void resetPage(){
+        page = 0;
+    }
 }

@@ -16,6 +16,8 @@ public class Character {
     float[][] hitbox = new float[3][3];
     private int width;
     private int height;
+    private int health;
+    private int maxHealth;
     Bitmap man;
     Bitmap arm1;
     Bitmap arm2;
@@ -26,10 +28,13 @@ public class Character {
         arm1 = BitmapFactory.decodeResource(res, R.drawable.arm1);
         arm2 = BitmapFactory.decodeResource(res, R.drawable.arm2);
         gun = BitmapFactory.decodeResource(res, R.drawable.gun);
+        maxHealth = 100;
+        health = maxHealth;
     }
 
     public void set(int width, int height) {
         position = new Point(width / 2, height * 2 / 5);
+        
         this.width = width;
         this.height = height;
 
@@ -57,6 +62,11 @@ public class Character {
     public void setPosition() {
         position = new Point(width / 2, height * 2 / 5);
         smokePosition = new Point(getSmokeX(), getSmokeY());
+    }
+    
+    public void reset(){
+        setPosition();
+        health = maxHealth;
     }
 
     public float getShotX() {
@@ -140,7 +150,7 @@ public class Character {
         smokePosition.setX(getSmokeX());
         smokePosition.setY(getSmokeY());
 
-//        position = position.move(velocity);
+        // position = position.move(velocity);
 
     }
 
@@ -192,4 +202,24 @@ public class Character {
                 + hitbox[2][1], hitbox[2][2], paint);
     }
 
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    public void incrementHealth(int increment) {
+        this.health += increment;
+    }
+
+    public void takeDamage(int damage) {
+        incrementHealth(-1 * damage);
+
+    }
+
+    public boolean isDead() {
+        return health <= 0;
+    }
 }

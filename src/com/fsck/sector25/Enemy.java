@@ -92,4 +92,8 @@ public abstract class Enemy {
     public int getScore() {
         return score;
     }
+
+    public int getDamage() {
+        return 5;
+    }
 }

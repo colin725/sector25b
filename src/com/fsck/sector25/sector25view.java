@@ -28,7 +28,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     public static final boolean DRAW_HITBOXES = false;
 
     public enum GameState {
-        STATE_PAUSE, STATE_RUNNING, STATE_MENU
+        STATE_PAUSE, STATE_RUNNING, STATE_DEAD, STATE_MENU
     }
 
     /*
@@ -52,8 +52,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Menu menu;
         private Character character;
         private GameHUD hud;
-        // private Joystick js = new Joystick();
         private Bitmap background;
+        private Context context;
         private sector25view parentView;
 
         /** states */
@@ -63,6 +63,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         public sector25thread(SurfaceHolder surfaceHolder, Context context,
                 Handler handler, sector25view parentView) {
             this.parentView = parentView;
+            this.context = context;
             Resources res = context.getResources();
             this.handler = handler;
             mSurfaceHolder = surfaceHolder;
@@ -107,6 +108,15 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         hud.draw(canvas, paint);
                         character.draw(canvas, paint);
                         canvas.drawARGB(155, 0, 0, 0);
+                    } else if (mState == GameState.STATE_DEAD) {
+                        hud.draw(canvas, paint);
+                        character.draw(canvas, paint);
+                        canvas.drawARGB(155, 0, 0, 0);
+                        paint.setTextSize(40);
+                        canvas.drawText("GAME OVER", width / 2 - 100,
+                                height / 2, paint);
+                        canvas.drawText("Score: " + score, width / 2 - 100,
+                                height / 2 + 100, paint);
                     }
 
                     canvas.restore();
@@ -134,70 +144,95 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 if (elapsedFrame > 33) {
 
                     if (mState == GameState.STATE_RUNNING) {
-                        Vector charVelocity = hud.getLeftVector();
-                        Vector gunDirection = hud.getRightVector().normalize();
-
-                        // Place holder for score; arcade mode where score
-                        // is determined by distance traveled to the right.
-                        // score += charVelocity.getX();
-                        hud.setScore(score);
-
-                        hud.update();
-
-                        character.update(charVelocity, gunDirection);
-                        level.update(charVelocity, character.getPosition(),
-                                false);
-
-                        int count = 0;
-                        ArrayList<Integer> remove = new ArrayList<Integer>();
-                        for (Enemy enemy : level.getEnemies()) {
-                            if (character.testHit(enemy.getHitBox())) {
-                                hud.getHealthbar().incrementHealth(-5);
-                                remove.add(count);
-                            }
-                            count++;
-                        }
-                        for (int i = remove.size() - 1; i >= 0; i--) {
-                            level.removeEnemy(remove.get(i));
-
-                        }
-
-                        // shoot (place holder, will have to create different
-                        // shots/upgrades)
-                        if (elapsedShot > 100) {
-                            if (level.shoot(gunDirection, character.getShotX(),
-                                    character.getShotY())) {
-                                mLastShot = now;
-                            }
-                        }
+                        updateRunning(now, elapsedShot);
+                        updateSmoke(now, elapsedSmoke);
                     } else if (mState == GameState.STATE_MENU) {
-                        level.update(new Vector(15, 0),
-                                character.getPosition(), false);
-                        character.update(new Vector(0, 0), level.menuShoot(
-                                character.getPosition(), character.getShotX(),
-                                character.getShotY()));
-                        if (menu.page() == 1) {
-                            level.clear();
-                        }
+                        updateMenu();
+                        updateSmoke(now, elapsedSmoke);
                     } else if (mState == GameState.STATE_PAUSE) {
-                        level.update(new Vector(15, 0),
-                                character.getPosition(), true);
-                    }
-
-                    // add smoke
-                    if (elapsedSmoke > 300) {
-                        if (!(mState == GameState.STATE_MENU && menu.page() == 1)) {
-                            level.addSmoke(character.getSmokePosition(),
-                                    character.getSmokeVelocity());
-                            // placeholder adding enemies
-                            level.addEnemy(character.getPosition());
-                        }
-                        mLastSmoke = now;
+                        updatePaused();
+                    } else if (mState == GameState.STATE_DEAD) {
+                        updateDead();
                     }
 
                     mLastTime = now;
                 }
             }
+        }
+
+        private void updateDead() {
+            level.update(new Vector(15, 0), character.getPosition(), true);
+        }
+
+        private void updatePaused() {
+            level.update(new Vector(15, 0), character.getPosition(), true);
+        }
+
+        private void updateSmoke(long now, double elapsedSmoke) {
+            // add smoke
+            if (elapsedSmoke > 300) {
+                if (!(mState == GameState.STATE_MENU && menu.page() == 1)) {
+                    level.addSmoke(character.getSmokePosition(),
+                            character.getSmokeVelocity());
+                    // placeholder adding enemies
+                    level.addEnemy(character.getPosition());
+                }
+                mLastSmoke = now;
+            }
+        }
+
+        private void updateMenu() {
+            level.update(new Vector(15, 0), character.getPosition(), false);
+            character.update(
+                    new Vector(0, 0),
+                    level.menuShoot(character.getPosition(),
+                            character.getShotX(), character.getShotY()));
+            if (menu.page() == 1) {
+                level.clear();
+            }
+        }
+
+        private void updateRunning(long now, double elapsedShot) {
+            Vector charVelocity = hud.getLeftVector();
+            Vector gunDirection = hud.getRightVector().normalize();
+
+            // Place holder for score; arcade mode where score
+            // is determined by distance traveled to the right.
+            // score += charVelocity.getX();
+            hud.setScore(score);
+
+            hud.update();
+
+            character.update(charVelocity, gunDirection);
+            level.update(charVelocity, character.getPosition(), false);
+
+            int count = 0;
+            ArrayList<Integer> remove = new ArrayList<Integer>();
+            for (Enemy enemy : level.getEnemies()) {
+                if (character.testHit(enemy.getHitBox())) {
+                    character.takeDamage(enemy.getDamage());
+                    hud.getHealthbar().setHealth(character.getHealth());
+                    remove.add(count);
+                }
+                count++;
+            }
+            for (int i = remove.size() - 1; i >= 0; i--) {
+                level.removeEnemy(remove.get(i));
+            }
+
+            if (character.isDead()) {
+                mState = GameState.STATE_DEAD;
+            }
+
+            // shoot (place holder, will have to create different
+            // shots/upgrades)
+            if (elapsedShot > 100) {
+                if (level.shoot(gunDirection, character.getShotX(),
+                        character.getShotY())) {
+                    mLastShot = now;
+                }
+            }
+
         }
 
         @Override
@@ -290,6 +325,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 mState = GameState.STATE_RUNNING;
             } else if (mState == GameState.STATE_MENU) {
                 menu.touch(event);
+            } else if (mState == GameState.STATE_DEAD) {
+                mState = GameState.STATE_MENU;
+                menu.resetPage();
             }
             return true;
         }
@@ -347,8 +385,10 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         public void startGame() {
-            mState = GameState.STATE_RUNNING;
-            character.setPosition();
+            score = 0;
+            level.setLevel(0);
+            character.reset();
+            mState = GameState.STATE_RUNNING;            
         }
 
         public void notifyEnemyDead(Enemy enemy) {

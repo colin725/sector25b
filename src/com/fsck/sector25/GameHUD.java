@@ -128,4 +128,8 @@ public class GameHUD {
         scoreUpdated = true;
         this.score = score;
     }
+
+    public int getScore() {
+        return this.score;
+    }
 }
