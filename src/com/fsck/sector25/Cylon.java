@@ -29,7 +29,7 @@ public class Cylon extends Enemy {
         this.currHealth = maxHealth;
         this.score = 10;
         Random r = new Random();
-        maxVelocity = 5 + r.nextFloat() * 5;
+        maxVelocity = 3 + r.nextFloat() * 3;
     }
 
     @Override

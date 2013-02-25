@@ -24,11 +24,12 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     @SuppressWarnings("unused")
     private String TAG = "sector25";
 
-    public static final float VELOCITY_SCALE = .25f;
+    public static final float VELOCITY_SCALE = .15f;
     public static final boolean DRAW_HITBOXES = false;
 
     public enum GameState {
-        STATE_PAUSE, STATE_RUNNING, STATE_DEAD, STATE_MENU
+        STATE_PAUSE, STATE_RUNNING, STATE_DEAD, STATE_MENU,
+        STATE_WIN
     }
 
     /*
@@ -117,6 +118,15 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         canvas.drawARGB(155, 0, 0, 0);
                         paint.setTextSize(40);
                         canvas.drawText("GAME OVER", width / 2 - 100,
+                                height / 2, paint);
+                        canvas.drawText("Score: " + score, width / 2 - 100,
+                                height / 2 + 100, paint);
+                    } else if (mState == GameState.STATE_WIN) {
+                        hud.draw(canvas, paint);
+                        character.draw(canvas, paint);
+                        canvas.drawARGB(155, 0, 0, 0);
+                        paint.setTextSize(40);
+                        canvas.drawText("Level complete!", width / 2 - 100,
                                 height / 2, paint);
                         canvas.drawText("Score: " + score, width / 2 - 100,
                                 height / 2 + 100, paint);
@@ -223,10 +233,6 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 level.removeEnemy(remove.get(i));
             }
 
-            if (character.isDead()) {
-                mState = GameState.STATE_DEAD;
-            }
-
             // shoot (place holder, will have to create different
             // shots/upgrades)
             if (elapsedShot > 100) {
@@ -236,6 +242,11 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
 
+            if (hud.win()) {
+                mState = GameState.STATE_WIN;
+            } else if (character.isDead()) {
+                mState = GameState.STATE_DEAD;
+            }
         }
 
         @Override
@@ -331,6 +342,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             } else if (mState == GameState.STATE_DEAD) {
                 mState = GameState.STATE_MENU;
                 menu.resetPage();
+            } else if (mState == GameState.STATE_WIN) {
+                mState = GameState.STATE_MENU;
             }
             return true;
         }
@@ -396,7 +409,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public void notifyEnemyDead(Enemy enemy) {
             score += enemy.getScore();
-
+            hud.addKill();
         }
 
     }

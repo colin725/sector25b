@@ -18,24 +18,27 @@ public class GameHUD {
     private int height, width;
     private TextView scoreText;
     private int score;
+    private static int gameCounter;
+    private static int gameStyle;
+    private static int winCondition = 60;
     private Handler handler;
     private Bitmap pause, play, currentButton;
+    private Bitmap time, kills;
     private Point pause_point1, pause_point2;
     private boolean scoreUpdated = false;
 
     public GameHUD(Context context, Handler handler) {
         Resources res = context.getResources();
         healthbar = new Healthbar(res);
-        pause = Bitmap.createScaledBitmap(
-                BitmapFactory.decodeResource(res, R.drawable.pause), 100, 100,
-                false);
-        play = Bitmap.createScaledBitmap(
-                BitmapFactory.decodeResource(res, R.drawable.play), 100, 100,
-                false);
+        pause = BitmapFactory.decodeResource(res, R.drawable.pause);
+        play = BitmapFactory.decodeResource(res, R.drawable.play);
+        time = BitmapFactory.decodeResource(res, R.drawable.time);
+        kills = BitmapFactory.decodeResource(res, R.drawable.kills);
         currentButton = pause;
         pause_point1 = new Point(50, 50);
         pause_point2 = new Point(150, 150);
         js = new Joystick();
+        gameStyle = 2;
         this.handler = handler;
     }
 
@@ -43,14 +46,30 @@ public class GameHUD {
         js.drawLeft(canvas, paint);
         js.drawRight(canvas, paint);
         healthbar.draw(canvas, width / 2, height * 9 / 10);
-        canvas.drawBitmap(currentButton, 50, 50, paint);
+        canvas.drawBitmap(currentButton, width / 15, width / 15, paint);
+        paint.setAlpha(125);
+        switch (gameStyle) {
+            // Survive for time
+            case 1:
+                canvas.drawBitmap(time, width * 0.45f, height * 0.77f, paint);
+                break;
+            // Reach x kills
+            case 2:
+                canvas.drawBitmap(kills, width * 0.45f, height * 0.76f, paint);
+                break;
+        }
+        canvas.drawText("" + gameCounter, width * 0.50f, height * 0.83f, paint);
+        paint.setAlpha(255);
     }
 
     public void set(int width, int height) {
         this.height = height;
         this.width = width;
         js.set(width, height);
-
+        pause = Bitmap.createScaledBitmap(pause, width / 25, width /25, false);
+        play = Bitmap.createScaledBitmap(play, width / 35, width / 35, false);
+        time = Bitmap.createScaledBitmap(time, width / 30, width / 20, false);
+        kills = Bitmap.createScaledBitmap(kills, width / 30, width / 20, false);
     }
 
     public void touch(MotionEvent event) {
@@ -96,6 +115,11 @@ public class GameHUD {
             handler.postDelayed(scoreUpdate, 1);
     }
 
+    public void addKill() {
+        if (gameStyle == 2)
+            gameCounter++;
+    }
+
     public Healthbar getHealthbar() {
         return healthbar;
     }
@@ -124,6 +148,10 @@ public class GameHUD {
         scoreText = view;
     }
 
+    public void setGameStyle(int style) {
+        this.gameStyle = style;
+    }
+
     public void setScore(int score) {
         scoreUpdated = true;
         this.score = score;
@@ -131,5 +159,13 @@ public class GameHUD {
 
     public int getScore() {
         return this.score;
+    }
+
+    public boolean win() {
+        return gameCounter >= winCondition;
+    }
+
+    public static void clearGoal() {
+        gameCounter = 0;
     }
 }

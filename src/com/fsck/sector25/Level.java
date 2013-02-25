@@ -84,7 +84,7 @@ public class Level {
 
     public void addEnemy(Point characterPos) {
         if (enemies.size() < 100)
-            if (enemies.size() % 2 == 0) {
+            if (enemies.size() % 10 == 0) {
                 // every 10th enemy is a Wyrm
                 enemies.add(new Wyrm(characterPos, 5));
             } else {
@@ -160,8 +160,6 @@ public class Level {
     }
 
     public void setLevel(int i) {
-        stars.set(width, height);
-        grid.set(width, height);
         enemies.clear();
         projectiles.clear();
         

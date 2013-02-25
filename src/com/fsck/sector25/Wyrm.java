@@ -33,7 +33,7 @@ public class Wyrm extends Enemy {
         this.score = 100;
 
         Random r = new Random();
-        maxVelocity = 5 + r.nextFloat() * 5;
+        maxVelocity = 3 + r.nextFloat() * 3;
         rotationDirection = r.nextBoolean() ? 1 : -1;
     }
 
@@ -57,11 +57,12 @@ public class Wyrm extends Enemy {
         // .add(charVelocity.normalize()).scale(maxVelocity)
         // .sub(charVelocity).add(Vector.random());
 
-        Vector v = charVelocity.normalize().add(
-                rotationCenter.unitVecTo(characterPos));
+        Vector v = rotationCenter.unitVecTo(characterPos);
         rotationCenter = rotationCenter.move(v);
 
         velocity = velocity.add(position.unitVecTo(rotationCenter)).normalize().scale(maxVelocity);
+
+        velocity = velocity.sub(charVelocity);
 
         // jump around if character runs too far away
         // intent is to make the player not be able to run away forever

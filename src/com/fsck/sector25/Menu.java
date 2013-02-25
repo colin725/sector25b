@@ -259,6 +259,7 @@ public class Menu {
                 } else {
                     if (selected == 1) {
                         //TODO: set up level stuff
+                        GameHUD.clearGoal();
                         sector25view.startGame();
                     } else if (selected == 2) {
                         popup = 0;
