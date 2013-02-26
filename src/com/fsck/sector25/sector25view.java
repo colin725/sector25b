@@ -269,7 +269,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         public void setRunning(boolean b) {
-            mRun = b;
+            synchronized (mSurfaceHolder) {
+                mRun = b;
+            }
         }
 
         public void setState(GameState state) {
@@ -333,19 +335,21 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         public boolean onTouchEvent(MotionEvent event) {
-            if (mState == GameState.STATE_RUNNING) {
-                hud.touch(event);
-            } else if (mState == GameState.STATE_PAUSE) {
-                mState = GameState.STATE_RUNNING;
-            } else if (mState == GameState.STATE_MENU) {
-                menu.touch(event);
-            } else if (mState == GameState.STATE_DEAD) {
-                mState = GameState.STATE_MENU;
-                menu.resetPage();
-            } else if (mState == GameState.STATE_WIN) {
-                mState = GameState.STATE_MENU;
+            synchronized (mSurfaceHolder) {
+                if (mState == GameState.STATE_RUNNING) {
+                    hud.touch(event);
+                } else if (mState == GameState.STATE_PAUSE) {
+                    mState = GameState.STATE_RUNNING;
+                } else if (mState == GameState.STATE_MENU) {
+                    menu.touch(event);
+                } else if (mState == GameState.STATE_DEAD) {
+                    mState = GameState.STATE_MENU;
+                    menu.resetPage();
+                } else if (mState == GameState.STATE_WIN) {
+                    mState = GameState.STATE_MENU;
+                }
+                return true;
             }
-            return true;
         }
 
         public Paint getPaint() {

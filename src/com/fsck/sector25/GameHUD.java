@@ -14,7 +14,7 @@ import android.widget.TextView;
 public class GameHUD {
 
     private Healthbar healthbar;
-    private Joystick js;
+    private static Joystick js;
     private int height, width;
     private TextView scoreText;
     private int score;
@@ -34,7 +34,6 @@ public class GameHUD {
         play = BitmapFactory.decodeResource(res, R.drawable.play);
         time = BitmapFactory.decodeResource(res, R.drawable.time);
         kills = BitmapFactory.decodeResource(res, R.drawable.kills);
-        currentButton = pause;
         pause_point1 = new Point(50, 50);
         pause_point2 = new Point(150, 150);
         js = new Joystick();
@@ -70,6 +69,7 @@ public class GameHUD {
         play = Bitmap.createScaledBitmap(play, width / 35, width / 35, false);
         time = Bitmap.createScaledBitmap(time, width / 30, width / 20, false);
         kills = Bitmap.createScaledBitmap(kills, width / 30, width / 20, false);
+        currentButton = pause;
     }
 
     public void touch(MotionEvent event) {
@@ -165,7 +165,8 @@ public class GameHUD {
         return gameCounter >= winCondition;
     }
 
-    public static void clearGoal() {
+    public static void clear() {
         gameCounter = 0;
+        js.clear();
     }
 }

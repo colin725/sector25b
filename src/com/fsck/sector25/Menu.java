@@ -1,5 +1,7 @@
 package com.fsck.sector25;
 
+import java.util.ArrayList;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,9 +28,11 @@ public class Menu {
     private float button2Y;
     private int selected;
     private int popup;
+    private int mapPosition;
     private Healthbar health;
     private static int[][] buttons;
     private float levelMap[][];
+    private int[][] connection;
     private static Bitmap[] planets;
     private static Bitmap arrow;
 
@@ -85,29 +89,50 @@ public class Menu {
     public void setMenuMap(int level) {
         switch (level) {
             /*
-             * hacky level position stuff
+             * levelMap marks the planets
              * 0 : X
              * 1 : Y
              * 2 : bitmap
-             * 3,4,5 : possible connections
+             * 
+             * connection connects them
+             * 0, 1, 2 are possible connections
+             * 3 is a chosen path
              */
             case 1:
                 levelMap = new float[][]{
-                        {width / 15, height/2, 6, 1, 2, 3},
-                        {width/5, height/4, 0, 4, 5, -1},
-                        {width/11*2.4f, height/2, 1, 5, -1, -1},
-                        {width/13*3, height/5*4, 2, 6, -1, -1},
-                        {width/5*2.1f, height/5, 3, 7, -1, -1},
-                        {width/5*2.05f, height/9*4, 4, 8, -1, -1},
-                        {width/5*1.95f, height/6*5, 3, 8, 9, -1},
-                        {width/5*3f, height/9*2, 2, 10, -1, -1},
-                        {width/5*3, height/2, 1, 11, -1, -1},
-                        {width/4*2.3f, height/4*3, 0, 11, -1, -1},
-                        {width/5*3.76f, height/3.2f, 3, 12, -1, -1},
-                        {width/5*3.82f, height/5*3.5f, 4, 12, -1, -1},
-                        {width/12*11.1f, height/2.05f, 5, -1, -1, -1}
+                        {width / 15, height/2, -1},
+                        {width/5, height/4, 0},
+                        {width/11*2.4f, height/2, 1},
+                        {width/13*3, height/5*4, 2},
+                        {width/5*2.1f, height/5, 3},
+                        {width/5*2.05f, height/9*4, 4},
+                        {width/5*1.95f, height/6*5, 3},
+                        {width/5*3f, height/9*2, 2},
+                        {width/5*3, height/2, 1},
+                        {width/4*2.3f, height/4*3, 0},
+                        {width/5*3.76f, height/3.2f, 3},
+                        {width/5*3.82f, height/5*3.5f, 4},
+                        {width/12*11.1f, height/2.05f, 5}
                 };
+
+                connection = new int[][]{
+                    {1, 2, 3, 0},
+                    {4, 5, -1, 0},
+                    {5, -1, -1, 0},
+                    {6, -1, -1, 0},
+                    {7, -1, -1, 0},
+                    {8, -1, -1, 0},
+                    {8, 9, -1, 0},
+                    {10, -1, -1, 0},
+                    {11, -1, -1, 0},
+                    {11, -1, -1, 0},
+                    {12, -1, -1, 0},
+                    {12, -1, -1, 0},
+                    {-1, -1, -1, 0}
+                };
+                break;
         }
+        mapPosition = 0;
 
         button1X = width / 5 * 3.25f;
         button1Y = height / 2f;
@@ -115,38 +140,91 @@ public class Menu {
         button2Y = height / 4 * 2.75f;
     }
 
+    private void mapMove(int position) {
+        for(int i = 0; i < connection.length; i++){
+            connection[i][3] = -1;
+        }
+        clearConnect(position);
+        mapPosition = position;
+    }
+
+
+    private void clearConnect(int position) {
+        connection[position][3] = 0;
+        for(int i = 0; i < 3; i++) {
+            if(connection[position][i] >= 0) {
+                clearConnect(connection[position][i]);
+            }
+        }
+    }
+
     public void draw(Canvas canvas, Paint paint) {
+        /*
+         * Page 0
+         * Main menu
+         */
         if (page == 0) {
             canvas.drawBitmap(menu, width - menu.getWidth(), 0, paint);
             if (selected > 0) {
                 canvas.drawBitmap(select, width - select.getWidth(), selected
                         * height / 4.45f - height / 8, paint);
             }
-        } else if (page == 1) {
+        } 
+
+        /*
+         * Page 1
+         * Map / level selection
+         */
+        else if (page == 1) {
+            //draw selected circle
             if (selected > 0) {
                 canvas.drawBitmap(sel, levelMap[selected][0] - sel.getWidth() / 2,
                         levelMap[selected][1] - sel.getHeight() / 2, paint);
             }
+
+            //draw planets
+            int count = 0;
             for (float[] planet : levelMap) {
-                canvas.drawBitmap(planets[(int) planet[2]], planet[0]
+                if (planet[2] >= 0 && count != mapPosition){
+                    canvas.drawBitmap(planets[(int) planet[2]], planet[0]
                         - planets[(int) planet[2]].getWidth() / 2, planet[1]
                         - planets[(int) planet[2]].getHeight() / 2, paint);
+                } else if (count == mapPosition) {
+                    canvas.drawBitmap(planets[6],
+                            planet[0] - planets[6].getWidth() / 2, 
+                            planet[1] - planets[6].getHeight() / 2, paint);
+                }
+                count++;
+            }
+
+            //draw connection arrows
+            count = 0;
+            for (int[] connect : connection) {
                 for (int i = 0; i < 3; i++) {
-                    if (planet[3 + i] > 0) {
-                        float levelX = levelMap[(int) planet[3 + i]][0];
-                        float levelY = levelMap[(int) planet[3 + i]][1];
-                        float arrowX = planet[0] + (levelX - planet[0]) / 2;
-                        float arrowY = planet[1] + (levelY - planet[1]) / 2;
+                    if (connect[i] > 0) {
+                        float levelX = levelMap[connect[i]][0];
+                        float levelY = levelMap[connect[i]][1];
+                        float arrowX = levelMap[count][0] / 2 + levelX / 2;
+                        float arrowY = levelMap[count][1] / 2 + levelY / 2;
                         float degrees = (float) Math.toDegrees(Math.atan((levelY
-                                - planet[1]) / Math.abs(levelX - planet[0])));
+                                - arrowY) / Math.abs(levelX - arrowX)));
+
+                        if (connect[3] < 0 || connect[3] > 0 && connect[3] != i) {
+                            // path was not used
+                            paint.setAlpha(40);
+                        }
                         canvas.save();
                         canvas.rotate(degrees, arrowX, arrowY);
                         canvas.drawBitmap(arrow, arrowX - arrow.getWidth() / 2,
                                 arrowY - arrow.getHeight() / 2, paint);
                         canvas.restore();
+                        paint.setAlpha(255);
                     }
                 }
+                count++;
             }
+
+            //draw pop-up on click
             if (popup > 0) {
                 canvas.drawBitmap(popupmenu, width / 2 - popupmenu.getWidth()
                         / 2, height / 2 - popupmenu.getHeight() / 2, paint);
@@ -255,11 +333,17 @@ public class Menu {
             }
             else if (page == 1) {
                 if (selected > 0 && popup == 0) {
-                    popup = selected;
+                    if (connection[mapPosition][0] == selected ||
+                            connection[mapPosition][1] == selected ||
+                            connection[mapPosition][2] == selected) {
+                        popup = selected;
+                    }
                 } else {
                     if (selected == 1) {
                         //TODO: set up level stuff
-                        GameHUD.clearGoal();
+                        mapMove(popup);
+                        popup = 0;
+                        GameHUD.clear();
                         sector25view.startGame();
                     } else if (selected == 2) {
                         popup = 0;
