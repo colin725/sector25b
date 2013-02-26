@@ -336,17 +336,22 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public boolean onTouchEvent(MotionEvent event) {
             synchronized (mSurfaceHolder) {
+                int eventAction = event.getAction();
+                int actionCode = eventAction & MotionEvent.ACTION_MASK;
+
                 if (mState == GameState.STATE_RUNNING) {
                     hud.touch(event);
-                } else if (mState == GameState.STATE_PAUSE) {
-                    mState = GameState.STATE_RUNNING;
                 } else if (mState == GameState.STATE_MENU) {
                     menu.touch(event);
-                } else if (mState == GameState.STATE_DEAD) {
-                    mState = GameState.STATE_MENU;
-                    menu.resetPage();
-                } else if (mState == GameState.STATE_WIN) {
-                    mState = GameState.STATE_MENU;
+                } else if (actionCode == MotionEvent.ACTION_DOWN) {
+                    if (mState == GameState.STATE_PAUSE) {
+                        mState = GameState.STATE_RUNNING;
+                    }  else if (mState == GameState.STATE_DEAD) {
+                        mState = GameState.STATE_MENU;
+                        menu.resetPage();
+                    } else if (mState == GameState.STATE_WIN) {
+                        mState = GameState.STATE_MENU;
+                    }
                 }
                 return true;
             }
