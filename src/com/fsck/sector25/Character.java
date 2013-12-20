@@ -1,5 +1,7 @@
 package com.fsck.sector25;
 
+import com.fsck.sector25.sector25view.GameState;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,98 +10,92 @@ import android.graphics.Paint;
 
 public class Character {
 
-    private Point position;
-    private Point smokePosition;
-    private int direction;
-    private float directionGun;
-    private Sprite spaceman;
-    float[][] hitbox = new float[3][3];
-    private int width;
-    private int height;
-    private int health;
-    private int maxHealth;
-    Bitmap man;
-    Bitmap arm1;
-    Bitmap arm2;
-    Bitmap gun;
+    private Point mPosition;
+    private Point mSmokePosition;
+    private int mDirection;
+    private float mDirectionGun;
+    private Sprite mSpaceman;
+    private float[][] mHitbox = new float[3][3];
+    private int mWidth;
+    private int mHeight;
+    private Bitmap mMan;
+    private Bitmap mArm1;
+    private Bitmap mArm2;
+    private Bitmap mGun;
 
     public Character(Resources res) {
-        man = BitmapFactory.decodeResource(res, R.drawable.spaceman);
-        arm1 = BitmapFactory.decodeResource(res, R.drawable.arm1);
-        arm2 = BitmapFactory.decodeResource(res, R.drawable.arm2);
-        gun = BitmapFactory.decodeResource(res, R.drawable.gun);
-        maxHealth = 100;
-        health = maxHealth;
+        mMan = BitmapFactory.decodeResource(res, R.drawable.spaceman);
+        mArm1 = BitmapFactory.decodeResource(res, R.drawable.arm1);
+        mArm2 = BitmapFactory.decodeResource(res, R.drawable.arm2);
+        mGun = BitmapFactory.decodeResource(res, R.drawable.gun);
     }
 
-    public void set(int width, int height) {
-        position = new Point(width / 2, height * 2 / 5);
-        
-        this.width = width;
-        this.height = height;
+    public void setSize(int width, int height) {
+        mPosition = new Point(width / 2, height * 2 / 5);
+        this.mWidth = width;
+        this.mHeight = height;
 
-        spaceman = new Sprite(Bitmap.createScaledBitmap(man, width / 5,
+        mSpaceman = new Sprite(Bitmap.createScaledBitmap(mMan, width / 5,
                 width / 5, false), 2);
-        arm1 = Bitmap.createScaledBitmap(arm1, width * 1 / 30, width * 1 / 40,
+        mArm1 = Bitmap.createScaledBitmap(mArm1, width * 1 / 30, width * 1 / 40,
                 false);
-        arm2 = Bitmap.createScaledBitmap(arm2, width * 1 / 30, width * 1 / 45,
+        mArm2 = Bitmap.createScaledBitmap(mArm2, width * 1 / 30, width * 1 / 45,
                 false);
-        gun = Bitmap.createScaledBitmap(gun, width * 1 / 13, width * 1 / 26,
+        mGun = Bitmap.createScaledBitmap(mGun, width * 1 / 13, width * 1 / 26,
                 false);
 
-        smokePosition = new Point(getSmokeX(), getSmokeY());
+        mSmokePosition = new Point(getSmokeX(), getSmokeY());
 
-        hitbox[0] = new float[] { 0, spaceman.getHeight() / 4, 20 };
-        hitbox[1] = new float[] { 0, -spaceman.getHeight() / 7, 30 };
-        hitbox[2] = new float[] { 0, 0, 20 };
+        mHitbox[0] = new float[] { 0, mSpaceman.getHeight() / 4, 20 };
+        mHitbox[1] = new float[] { 0, -mSpaceman.getHeight() / 7, 30 };
+        mHitbox[2] = new float[] { 0, 0, 20 };
     }
 
     public void setPositionMenu() {
-        position = new Point(width / 3, height / 2);
-        smokePosition = new Point(getSmokeX(), getSmokeY());
+        mPosition = new Point(mWidth / 3, mHeight / 2);
+        mSmokePosition = new Point(getSmokeX(), getSmokeY());
     }
 
-    public void setPosition() {
-        position = new Point(width / 2, height * 2 / 5);
-        smokePosition = new Point(getSmokeX(), getSmokeY());
+    public void setPositionDefault() {
+        mPosition = new Point(mWidth / 2, mHeight * 2 / 5);
+        mSmokePosition = new Point(getSmokeX(), getSmokeY());
     }
     
     public void reset(){
-        setPosition();
-        health = maxHealth;
+        setPositionDefault();
     }
 
     public float getShotX() {
-        float shotx = (float) (spaceman.getWidth() * 2 / 3 * Math.cos(Math
-                .toRadians(directionGun)));
-        return position.getX() + shotx - 2 * shotx * direction;
+        float shotx = (float) (mSpaceman.getWidth() * 2 / 3 * Math.cos(Math
+                .toRadians(mDirectionGun)));
+        return mPosition.getX() + shotx - 2 * shotx * mDirection;
     }
 
     public float getShotY() {
-        float shoty = (float) (spaceman.getWidth() * 2 / 3 * Math.sin(Math
-                .toRadians(directionGun)));
-        return position.getY() + shoty;
+        float shoty = (float) (mSpaceman.getWidth() * 2 / 3 * Math.sin(Math
+                .toRadians(mDirectionGun)));
+        return mPosition.getY() + shoty;
     }
 
     public Vector getShot() {
-        float shotx = (float) (spaceman.getWidth() * 2 / 3 * Math.cos(Math
-                .toRadians(directionGun)));
-        float shoty = (float) (spaceman.getWidth() * 2 / 3 * Math.sin(Math
-                .toRadians(directionGun)));
+        float shotx = (float) (mSpaceman.getWidth() * 2 / 3 * Math.cos(Math
+                .toRadians(mDirectionGun)));
+        float shoty = (float) (mSpaceman.getWidth() * 2 / 3 * Math.sin(Math
+                .toRadians(mDirectionGun)));
         return new Vector(shotx, shoty);
     }
 
     private float getSmokeX() {
-        return (position.getX() - spaceman.getWidth() / 4 + direction
-                * spaceman.getWidth() / 2 + spaceman.getWidth() / 4);
+        return (mPosition.getX() - mSpaceman.getWidth() / 4 + mDirection
+                * mSpaceman.getWidth() / 2 + mSpaceman.getWidth() / 4);
     }
 
     private float getSmokeY() {
-        return position.getY() + spaceman.getHeight() / 4;
+        return mPosition.getY() + mSpaceman.getHeight() / 4;
     }
 
     public Point getSmokePosition() {
-        return smokePosition;
+        return mSmokePosition;
     }
 
     public Vector getSmokeVelocity() {
@@ -107,85 +103,87 @@ public class Character {
     }
 
     private float getSmokeVX() {
-        return -(position.getX() - getSmokeX()) / 50;
+        return -(mPosition.getX() - getSmokeX()) / 50;
     }
 
     private float getSmokeVY() {
-        return (position.getY() - getSmokeY()) / 50;
+        return (mPosition.getY() - getSmokeY()) / 50;
     }
 
     public float getX() {
-        return position.getX();
+        return mPosition.getX();
     }
 
     public float getY() {
-        return position.getY();
+        return mPosition.getY();
     }
 
     public Point getPosition() {
-        return position;
+        return mPosition;
     }
 
     public void update(Vector velocity, Vector aim) {
-        // Set character direction and frame
-        spaceman.setFrame(1);
+        // Set character mDirection and frame
+        mSpaceman.setFrame(1);
         if (velocity.getX() > 0) {
-            direction = 0;
-            spaceman.setFrame(0);
+            mDirection = 0;
+            mSpaceman.setFrame(0);
         } else if (velocity.getX() < 0) {
-            direction = 1;
-            spaceman.setFrame(0);
+            mDirection = 1;
+            mSpaceman.setFrame(0);
         }
         if (aim.getX() > 0) {
-            direction = 0;
+            mDirection = 0;
         } else if (aim.getX() < 0) {
-            direction = 1;
+            mDirection = 1;
         }
 
-        // Set gun direction
+        // Set mGun mDirection
         if (!aim.isZero()) {
-            directionGun = aim.angle();
+            mDirectionGun = aim.angle();
         }
 
-        smokePosition.setX(getSmokeX());
-        smokePosition.setY(getSmokeY());
-
-        // position = position.move(velocity);
+        mSmokePosition.setX(getSmokeX());
+        mSmokePosition.setY(getSmokeY());
 
     }
 
-    public void draw(Canvas canvas, Paint paint) {
-        canvas.save();
-        canvas.translate(position.getX(), position.getY());
-        if (direction == 1)
-            canvas.scale(-1, 1);
-        canvas.save();
+    public void draw(Canvas canvas, Paint paint, GameState state, int page) {
 
-        canvas.rotate(directionGun - 5, -spaceman.getWidth() / 6, 0);
-        canvas.drawBitmap(arm2, 0, 0, paint);
-        canvas.restore();
+        if (!(state == GameState.STATE_MENU && page != 0)) {
 
-        spaceman.draw(canvas, 0, 0);
+            canvas.save();
+            canvas.translate(mPosition.getX(), mPosition.getY());
+            if (mDirection == 1)
+                canvas.scale(-1, 1);
+            canvas.save();
 
-        canvas.rotate(directionGun - 5, -spaceman.getWidth() / 12,
-                spaceman.getWidth() / 15);
-        canvas.drawBitmap(gun, -spaceman.getWidth() / 15, 0, paint);
-        canvas.drawBitmap(arm1, -spaceman.getWidth() / 9,
-                spaceman.getWidth() / 15, paint);
+            canvas.rotate(mDirectionGun - 5, -mSpaceman.getWidth() / 6, 0);
+            canvas.drawBitmap(mArm2, 0, 0, paint);
+            canvas.restore();
 
-        canvas.restore();
+            mSpaceman.draw(canvas, 0, 0);
+
+            canvas.rotate(mDirectionGun - 5, -mSpaceman.getWidth() / 12,
+                    mSpaceman.getWidth() / 15);
+            canvas.drawBitmap(mGun, -mSpaceman.getWidth() / 15, 0, paint);
+            canvas.drawBitmap(mArm1, -mSpaceman.getWidth() / 9,
+                    mSpaceman.getWidth() / 15, paint);
+
+            canvas.restore();
+        }
     }
 
     public float[][] getHitBox() {
-        return hitbox;
+        return mHitbox;
     }
 
     public boolean testHit(float[] enemy) {
-        for (int i = 0; i < hitbox.length; i++) {
-            float xdist = (position.getX() + hitbox[i][0]) - enemy[0];
-            float ydist = (position.getY() + hitbox[i][1]) - enemy[1];
+        for (int i = 0; i < mHitbox.length; i++) {
+            float xdist = (mPosition.getX() + mHitbox[i][0]) - enemy[0];
+            float ydist = (mPosition.getY() + mHitbox[i][1]) - enemy[1];
             float distance = (float) Math.sqrt(xdist * xdist + ydist * ydist);
-            if (distance < enemy[2] + hitbox[i][2]) {
+            if (distance < enemy[2] + mHitbox[i][2]) {
                 return true;
             }
         }
@@ -194,32 +192,11 @@ public class Character {
 
     public void drawHit(Canvas canvas, Paint paint) {
         // TODO: better hitboxes? Might be fine like this.
-        canvas.drawCircle(position.getX() + hitbox[0][0], position.getY()
-                + hitbox[0][1], hitbox[0][2], paint);
-        canvas.drawCircle(position.getX() + hitbox[1][0], position.getY()
-                + hitbox[1][1], hitbox[1][2], paint);
-        canvas.drawCircle(position.getX() + hitbox[2][0], position.getY()
-                + hitbox[2][1], hitbox[2][2], paint);
-    }
-
-    public int getHealth() {
-        return health;
-    }
-
-    public void setHealth(int health) {
-        this.health = health;
-    }
-
-    public void incrementHealth(int increment) {
-        this.health += increment;
-    }
-
-    public void takeDamage(int damage) {
-        incrementHealth(-1 * damage);
-
-    }
-
-    public boolean isDead() {
-        return health <= 0;
+        canvas.drawCircle(mPosition.getX() + mHitbox[0][0], mPosition.getY()
+                + mHitbox[0][1], mHitbox[0][2], paint);
+        canvas.drawCircle(mPosition.getX() + mHitbox[1][0], mPosition.getY()
+                + mHitbox[1][1], mHitbox[1][2], paint);
+        canvas.drawCircle(mPosition.getX() + mHitbox[2][0], mPosition.getY()
+                + mHitbox[2][1], mHitbox[2][2], paint);
     }
 }

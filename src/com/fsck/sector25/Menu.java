@@ -1,6 +1,6 @@
 package com.fsck.sector25;
 
-import java.util.ArrayList;
+import com.fsck.sector25.sector25view.GameState;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -39,7 +39,7 @@ public class Menu {
     public Menu() {
     }
 
-    public static void set(Resources res, int screenWidth, int screenHeight) {
+    public static void setSize(Resources res, int screenWidth, int screenHeight) {
         width = screenWidth;
         height = screenHeight;
         menu = BitmapFactory.decodeResource(res, R.drawable.menu);
@@ -158,109 +158,124 @@ public class Menu {
         }
     }
 
-    public void draw(Canvas canvas, Paint paint) {
-        /*
-         * Page 0
-         * Main menu
-         */
-        if (page == 0) {
-            canvas.drawBitmap(menu, width - menu.getWidth(), 0, paint);
-            if (selected > 0) {
-                canvas.drawBitmap(select, width - select.getWidth(), selected
-                        * height / 4.45f - height / 8, paint);
-            }
-        } 
+    public void draw(Canvas canvas, Paint paint, GameState state, int score) {
+        // Dull the stuff into background
+        if (state == GameState.STATE_PAUSE || state == GameState.STATE_DEAD ||
+                state == GameState.STATE_WIN) {
+            canvas.drawARGB(155, 0, 0, 0);
+        }
 
-        /*
-         * Page 1
-         * Map / level selection
-         */
-        else if (page == 1) {
-            //draw selected circle
-            if (selected > 0) {
-                canvas.drawBitmap(sel, levelMap[selected][0] - sel.getWidth() / 2,
-                        levelMap[selected][1] - sel.getHeight() / 2, paint);
-            }
+        if (state == GameState.STATE_MENU) {
+            // TODO: Menu
+            // 1) Animate in and out
+            // 3) Add hover differentiation on buttons
+                // I don't think this is needed anymore....
 
-            //draw planets
-            int count = 0;
-            for (float[] planet : levelMap) {
-                if (planet[2] >= 0 && count != mapPosition){
-                    canvas.drawBitmap(planets[(int) planet[2]], planet[0]
-                        - planets[(int) planet[2]].getWidth() / 2, planet[1]
-                        - planets[(int) planet[2]].getHeight() / 2, paint);
-                } else if (count == mapPosition) {
-                    canvas.drawBitmap(planets[6],
-                            planet[0] - planets[6].getWidth() / 2, 
-                            planet[1] - planets[6].getHeight() / 2, paint);
+            /*
+             * Page 0
+             * Main menu
+             */
+            if (page == 0) {
+                canvas.drawBitmap(menu, width - menu.getWidth(), 0, paint);
+                if (selected > 0) {
+                    canvas.drawBitmap(select, width - select.getWidth(), selected
+                            * height / 4.45f - height / 8, paint);
                 }
-                count++;
-            }
+            } 
 
-            //draw connection arrows
-            count = 0;
-            for (int[] connect : connection) {
-                for (int i = 0; i < 3; i++) {
-                    if (connect[i] > 0) {
-                        float levelX = levelMap[connect[i]][0];
-                        float levelY = levelMap[connect[i]][1];
-                        float arrowX = levelMap[count][0] / 2 + levelX / 2;
-                        float arrowY = levelMap[count][1] / 2 + levelY / 2;
-                        float degrees = (float) Math.toDegrees(Math.atan((levelY
-                                - arrowY) / Math.abs(levelX - arrowX)));
+            /*
+             * Page 1
+             * Map / level selection
+             */
+            else if (page == 1) {
+                //draw selected circle
+                if (selected > 0) {
+                    canvas.drawBitmap(sel, levelMap[selected][0] - sel.getWidth() / 2,
+                            levelMap[selected][1] - sel.getHeight() / 2, paint);
+                }
 
-                        if (connect[3] < 0 || connect[3] > 0 && connect[3] != i) {
-                            // path was not used
-                            paint.setAlpha(40);
-                        }
-                        canvas.save();
-                        canvas.rotate(degrees, arrowX, arrowY);
-                        canvas.drawBitmap(arrow, arrowX - arrow.getWidth() / 2,
-                                arrowY - arrow.getHeight() / 2, paint);
-                        canvas.restore();
-                        paint.setAlpha(255);
+                //draw planets
+                int count = 0;
+                for (float[] planet : levelMap) {
+                    if (planet[2] >= 0 && count != mapPosition){
+                        canvas.drawBitmap(planets[(int) planet[2]], planet[0]
+                            - planets[(int) planet[2]].getWidth() / 2, planet[1]
+                            - planets[(int) planet[2]].getHeight() / 2, paint);
+                    } else if (count == mapPosition) {
+                        canvas.drawBitmap(planets[6],
+                                planet[0] - planets[6].getWidth() / 2, 
+                                planet[1] - planets[6].getHeight() / 2, paint);
                     }
+                    count++;
                 }
-                count++;
-            }
 
-            //draw pop-up on click
-            if (popup > 0) {
-                canvas.drawBitmap(popupmenu, width / 2 - popupmenu.getWidth()
-                        / 2, height / 2 - popupmenu.getHeight() / 2, paint);
-                canvas.save();
-                canvas.scale(2, 2, width / 3.4f, height / 3);
-                canvas.drawBitmap(planets[(int) levelMap[popup][2]], width / 3.4f
-                        - planets[(int) levelMap[popup][2]].getWidth() / 2, height / 3
-                        - planets[(int) levelMap[popup][2]].getHeight() / 2, paint);
-                canvas.restore();
-                health.draw(canvas, (int) (width / 3.4f), height / 4 * 3);
-                /*
-                 * TODO: scale text according to screen width
-                 * http://catchthecows.com/?p=72
-                 */
-                canvas.drawText("Current Health", (width / 5f), height / 4 * 2.8f, paint);
-                canvas.drawText("Current Mission:", (width / 5 * 2.5f), height / 4 , paint);
-                canvas.drawText("Survive for", (width / 5 * 2.5f), height / 3.35f , paint);
-                canvas.drawText("60 seconds", (width / 5 * 2.5f), height / 2.9f , paint);
+                //draw connection arrows
+                count = 0;
+                for (int[] connect : connection) {
+                    for (int i = 0; i < 3; i++) {
+                        if (connect[i] > 0) {
+                            float levelX = levelMap[connect[i]][0];
+                            float levelY = levelMap[connect[i]][1];
+                            float arrowX = levelMap[count][0] / 2 + levelX / 2;
+                            float arrowY = levelMap[count][1] / 2 + levelY / 2;
+                            float degrees = (float) Math.toDegrees(Math.atan((levelY
+                                    - arrowY) / Math.abs(levelX - arrowX)));
 
-                canvas.drawBitmap(button, button1X - button.getWidth() / 2,
-                        button1Y - button.getHeight() / 2, paint);
-                canvas.drawBitmap(button, button2X - button.getWidth() / 2,
-                        button2Y - button.getHeight() / 2, paint);
-                paint.setColor(Color.BLACK);
-                canvas.drawText("Start", (width / 5 * 3.08f), height / 1.95f , paint);
-                canvas.drawText("Cancel", (width / 5 * 3), height / 4 * 2.8f , paint);
-                paint.setColor(Color.WHITE);
-                if (selected == 1) {
-                    canvas.drawBitmap(select3, button1X - select3.getWidth() / 2,
-                            button1Y - select3.getHeight() / 2, paint);
-                } else if (selected == 2) {
-                    canvas.drawBitmap(select3, button2X - select3.getWidth() / 2,
-                            button2Y - select3.getHeight() / 2, paint);
+                            if (connect[3] < 0 || connect[3] > 0 && connect[3] != i) {
+                                // path was not used
+                                paint.setAlpha(40);
+                            }
+                            canvas.save();
+                            canvas.rotate(degrees, arrowX, arrowY);
+                            canvas.drawBitmap(arrow, arrowX - arrow.getWidth() / 2,
+                                    arrowY - arrow.getHeight() / 2, paint);
+                            canvas.restore();
+                            paint.setAlpha(255);
+                        }
+                    }
+                    count++;
+                }
+
+                //draw pop-up on click
+                if (popup > 0) {
+                    canvas.drawBitmap(popupmenu, width / 2 - popupmenu.getWidth()
+                            / 2, height / 2 - popupmenu.getHeight() / 2, paint);
+                    canvas.save();
+                    canvas.scale(2, 2, width / 3.4f, height / 3);
+                    canvas.drawBitmap(planets[(int) levelMap[popup][2]], width / 3.4f
+                            - planets[(int) levelMap[popup][2]].getWidth() / 2, height / 3
+                            - planets[(int) levelMap[popup][2]].getHeight() / 2, paint);
+                    canvas.restore();
+                    health.draw(canvas, (int) (width / 3.4f), height / 4 * 3);
+                    /*
+                     * TODO: scale text according to screen width
+                     * http://catchthecows.com/?p=72
+                     */
+                    canvas.drawText("Current Health", (width / 5f), height / 4 * 2.8f, paint);
+                    canvas.drawText("Current Mission:", (width / 5 * 2.5f), height / 4 , paint);
+                    canvas.drawText("Survive for", (width / 5 * 2.5f), height / 3.35f , paint);
+                    canvas.drawText("60 seconds", (width / 5 * 2.5f), height / 2.9f , paint);
+
+                    canvas.drawBitmap(button, button1X - button.getWidth() / 2,
+                            button1Y - button.getHeight() / 2, paint);
+                    canvas.drawBitmap(button, button2X - button.getWidth() / 2,
+                            button2Y - button.getHeight() / 2, paint);
+                    paint.setColor(Color.BLACK);
+                    canvas.drawText("Start", (width / 5 * 3.08f), height / 1.95f , paint);
+                    canvas.drawText("Cancel", (width / 5 * 3), height / 4 * 2.8f , paint);
+                    paint.setColor(Color.WHITE);
+                    if (selected == 1) {
+                        canvas.drawBitmap(select3, button1X - select3.getWidth() / 2,
+                                button1Y - select3.getHeight() / 2, paint);
+                    } else if (selected == 2) {
+                        canvas.drawBitmap(select3, button2X - select3.getWidth() / 2,
+                                button2Y - select3.getHeight() / 2, paint);
+                    }
                 }
             }
         }
+
+        drawText(canvas, paint, state, score);
     }
 
     private void select(float x, float y) {
@@ -368,5 +383,20 @@ public class Menu {
     
     public void resetPage(){
         page = 0;
+    }
+
+    public void drawText(Canvas canvas, Paint paint, GameState state, int score) {
+        paint.setTextSize(40);
+        if (state == GameState.STATE_DEAD) {
+            canvas.drawText("GAME OVER", width / 2 - 100,
+                    height / 2, paint);
+            canvas.drawText("Score: " + score, width / 2 - 100,
+                    height / 2 + 100, paint);
+        } else if (state == GameState.STATE_WIN) {
+            canvas.drawText("Level complete!", width / 2 - 100,
+                    height / 2, paint);
+            canvas.drawText("Score: " + score, width / 2 - 100,
+                    height / 2 + 100, paint);
+        }
     }
 }

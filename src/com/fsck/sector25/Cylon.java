@@ -11,10 +11,9 @@ import android.graphics.Paint;
 
 public class Cylon extends Enemy {
 
-    private static final float hitboxRadius = 15;
+    private static final float hitboxRadius = 20;
     protected static int enemyDrawable;
     protected static Bitmap sprite;
-    private static final boolean healthbars = false;
 
     static {
         enemyDrawable = R.drawable.cylon;
@@ -29,7 +28,8 @@ public class Cylon extends Enemy {
         this.currHealth = maxHealth;
         this.score = 10;
         Random r = new Random();
-        maxVelocity = 3 + r.nextFloat() * 3;
+        maxVelocity = 4 + r.nextFloat() * 4;
+        color = Color.CYAN;
     }
 
     @Override
@@ -46,38 +46,6 @@ public class Cylon extends Enemy {
             setPosition(characterPos);
         }
         position = position.move(velocity);
-    }
-
-    @Override
-    public void draw(Canvas canvas, Paint paint) {
-        canvas.save();
-        canvas.translate(position.getX(), position.getY());
-
-        canvas.drawBitmap(sprite, -sprite.getWidth() / 2,
-                -sprite.getHeight() / 2, paint);
-        if(healthbars) {
-            int color = paint.getColor();
-            float healthRatio = ((float) currHealth) / ((float) maxHealth);
-            if (healthRatio <= .2 || (currHealth == 1 && maxHealth > 1)) {
-                paint.setColor(Color.RED);
-            } else if (healthRatio <= .5) {
-                paint.setColor(Color.YELLOW);
-            } else {
-                paint.setColor(Color.GREEN);
-            }
-            canvas.drawRect(-sprite.getWidth() / 2, -sprite.getHeight() + 5,
-                    -(sprite.getWidth() / 2)
-                            + (healthRatio * (sprite.getWidth())),
-                    -sprite.getHeight(), paint);
-            // Draw text health large
-            // paint.setTextSize(50);
-            // canvas.drawText("" + currHealth, -sprite.getWidth() / 2,
-            // -sprite.getHeight() + 5, paint);
-    
-            paint.setColor(color);
-        }
-
-        canvas.restore();
     }
 
     @Override
@@ -104,7 +72,7 @@ public class Cylon extends Enemy {
         canvas.drawCircle(position.getX(), position.getY(), hitboxRadius, paint);
     }
 
-    public static void set(Resources res, int screenWidth, int screenHeight) {
+    public static void setSize(Resources res, int screenWidth, int screenHeight) {
         width = screenWidth;
         height = screenHeight;
         sprite = BitmapFactory.decodeResource(res, enemyDrawable);

@@ -1,5 +1,7 @@
 package com.fsck.sector25;
 
+import com.fsck.sector25.sector25view.GameState;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -26,6 +28,8 @@ public class GameHUD {
     private Bitmap time, kills;
     private Point pause_point1, pause_point2;
     private boolean scoreUpdated = false;
+    private int mHealth;
+    private final static int mMaxHealth = 100;
 
     public GameHUD(Context context, Handler handler) {
         Resources res = context.getResources();
@@ -39,29 +43,34 @@ public class GameHUD {
         js = new Joystick();
         gameStyle = 2;
         this.handler = handler;
+        mHealth = mMaxHealth;
     }
 
-    public void draw(Canvas canvas, Paint paint) {
-        js.drawLeft(canvas, paint);
-        js.drawRight(canvas, paint);
-        healthbar.draw(canvas, width / 2, height * 9 / 10);
-        canvas.drawBitmap(currentButton, width / 15, width / 15, paint);
-        paint.setAlpha(125);
-        switch (gameStyle) {
-            // Survive for time
-            case 1:
-                canvas.drawBitmap(time, width * 0.45f, height * 0.77f, paint);
-                break;
-            // Reach x kills
-            case 2:
-                canvas.drawBitmap(kills, width * 0.45f, height * 0.76f, paint);
-                break;
+    public void draw(Canvas canvas, Paint paint, GameState state) {
+
+        if (!state.equals(GameState.STATE_MENU)) {
+            healthbar.draw(canvas, (int) (width / 3.4f), height / 4 * 3);
+            js.drawLeft(canvas, paint);
+            js.drawRight(canvas, paint);
+            healthbar.draw(canvas, width / 2, height * 9 / 10);
+            canvas.drawBitmap(currentButton, width / 15, width / 15, paint);
+            paint.setAlpha(125);
+            switch (gameStyle) {
+                // Survive for time
+                case 1:
+                    canvas.drawBitmap(time, width * 0.45f, height * 0.77f, paint);
+                    break;
+                // Reach x kills
+                case 2:
+                    canvas.drawBitmap(kills, width * 0.45f, height * 0.76f, paint);
+                    break;
+            }
+            canvas.drawText("" + gameCounter, width * 0.50f, height * 0.83f, paint);
+            paint.setAlpha(255);
         }
-        canvas.drawText("" + gameCounter, width * 0.50f, height * 0.83f, paint);
-        paint.setAlpha(255);
     }
 
-    public void set(int width, int height) {
+    public void setSize(int width, int height) {
         this.height = height;
         this.width = width;
         js.set(width, height);
@@ -94,14 +103,6 @@ public class GameHUD {
         return false;
     }
 
-    private Runnable scoreUpdate = new Runnable() {
-        public void run() {
-
-            if (scoreText != null)
-                scoreText.setText("Score: " + score + "  ");
-        }
-    };
-
     public Vector getLeftVector() {
         return new Vector(js.getX1(), js.getY1());
     }
@@ -115,25 +116,21 @@ public class GameHUD {
             handler.postDelayed(scoreUpdate, 1);
     }
 
-    public void addKill() {
+    private Runnable scoreUpdate = new Runnable() {
+        public void run() {
+
+            if (scoreText != null)
+                scoreText.setText("Score: " + score + "  ");
+        }
+    };
+
+    public void addKills(int kills) {
         if (gameStyle == 2)
-            gameCounter++;
+            gameCounter += kills;
     }
 
     public Healthbar getHealthbar() {
         return healthbar;
-    }
-
-    public Joystick getJs() {
-        return js;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public int getWidth() {
-        return width;
     }
 
     public void setHeight(int height) {
@@ -149,7 +146,28 @@ public class GameHUD {
     }
 
     public void setGameStyle(int style) {
-        this.gameStyle = style;
+        gameStyle = style;
+    }
+
+    public int getHealth() {
+        return mHealth;
+    }
+
+    public void setHealth(int health) {
+        this.mHealth = health;
+    }
+
+    public void incrementHealth(int increment) {
+        this.mHealth += increment;
+    }
+
+    public void takeDamage(int damage) {
+        incrementHealth(-1 * damage);
+        healthbar.setHealth(mHealth);
+    }
+
+    public boolean isDead() {
+        return mHealth <= 0;
     }
 
     public void setScore(int score) {

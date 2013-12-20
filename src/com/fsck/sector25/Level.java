@@ -8,26 +8,23 @@ import android.graphics.Paint;
 
 public class Level {
 
-    private int width;
     private int height;
-    private float displacement;
     private ArrayList<Enemy> enemies;
     private Stars stars;
     private Smoke smoke;
     private Projectiles projectiles;
     private Grid grid;
-    private sector25view view;
 
-    public Level(int level, Resources res, sector25view parentView) {
+    public Level(int level, Resources res) {
         enemies = new ArrayList<Enemy>();
         stars = new Stars(res);
         smoke = new Smoke(res);
         projectiles = new Projectiles(res);
         grid = new Grid();
-        view = parentView;
     }
 
-    public void update(Vector charVelocity, Point characterPos, boolean paused) {
+    public int[] update(Vector charVelocity, Point characterPos, boolean paused) {
+        int[] killed = new int[2];
         stars.move(charVelocity);
         if (charVelocity.isZero())
             stars.move(Vector.random());
@@ -46,7 +43,8 @@ public class Level {
                 if (enemy.isDead()) {
                     enemies.remove(i);
                     smoke.add(enemy.getPosition(), Vector.zero());
-                    view.getThread().notifyEnemyDead(enemy);
+                    killed[0]++;
+                    killed[1]+= enemy.getScore();
                 } else {
                     enemies.set(i, enemy);
                 }
@@ -59,6 +57,8 @@ public class Level {
         }
         smoke.update();
         grid.update(charVelocity.scale(sector25view.VELOCITY_SCALE));
+
+        return killed;
     }
 
     public void draw(Canvas canvas, Paint paint) {
@@ -92,8 +92,7 @@ public class Level {
             }
     }
 
-    public void set(int width, int height) {
-        this.width = width;
+    public void setSize(int width, int height) {
         this.height = height;
         stars.set(width, height);
         grid.set(width, height);
@@ -122,7 +121,6 @@ public class Level {
         float distance = height / 3;
         Boolean newTarget = false;
         int target = 0;
-        int count = 0;
         for (Enemy enemy : enemies) {
             if ((enemy.aimed() == 0 || !enemy.isDead())
                     && enemy.getPosition().distance(position) < distance) {
@@ -134,7 +132,6 @@ public class Level {
                 aimy = enemy.getY() - position.getY();
                 break;
             }
-            count++;
         }
         Vector aim = new Vector(aimx, aimy);
 
