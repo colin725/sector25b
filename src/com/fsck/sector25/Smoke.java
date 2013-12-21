@@ -9,26 +9,26 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 public class Smoke {
-    ArrayList<float[]> smokes = new ArrayList<float[]>();
-    Bitmap sprite;
+    ArrayList<float[]> mSmokes = new ArrayList<float[]>();
+    private static Bitmap mSprite;
 
     public Smoke(Resources res) {
-        sprite = BitmapFactory.decodeResource(res, R.drawable.smoke);
+        mSprite = BitmapFactory.decodeResource(res, R.drawable.smoke);
     }
 
     public void draw(Canvas canvas, Paint paint) {
-        for (int i = 0; i < smokes.size(); i++) {
-            float[] j = smokes.get(i);
+        for (int i = 0; i < mSmokes.size(); i++) {
+            float[] j = mSmokes.get(i);
             paint.setAlpha((int) j[2]);
-            canvas.drawBitmap(sprite, j[0] - sprite.getWidth(),
-                    j[1] - sprite.getHeight(), paint);
+            canvas.drawBitmap(mSprite, j[0] - mSprite.getWidth(),
+                    j[1] - mSprite.getHeight(), paint);
             paint.setAlpha(255);
         }
     }
 
     public void update() {
-        for (int i = smokes.size() - 1; i >= 0; i--) {
-            float[] j = smokes.get(i);
+        for (int i = mSmokes.size() - 1; i >= 0; i--) {
+            float[] j = mSmokes.get(i);
 
             // move away from character
             j[0] += j[3];
@@ -37,30 +37,30 @@ public class Smoke {
             // Decrease alpha until gone
             j[2] -= 10;
             if (j[2] <= 0)
-                smokes.remove(i);
+                mSmokes.remove(i);
             else
-                smokes.set(i, j);
+                mSmokes.set(i, j);
         }
     }
 
     public void add(Point position, Vector velocity) {
         float[] newSmoke = new float[5];
-        newSmoke[0] = position.getX(); // position x
-        newSmoke[1] = position.getY(); // position y
+        newSmoke[0] = position.getX(); // mPosition x
+        newSmoke[1] = position.getY(); // mPosition y
         newSmoke[2] = 255; // alpha
-        newSmoke[3] = velocity.getX(); // velocity x
-        newSmoke[4] = velocity.getY(); // velocity y
-        smokes.add(newSmoke);
+        newSmoke[3] = velocity.getX(); // mVelocity x
+        newSmoke[4] = velocity.getY(); // mVelocity y
+        mSmokes.add(newSmoke);
     }
 
     public void move(Vector v) {
-        for (float[] i : smokes) {
+        for (float[] i : mSmokes) {
             i[0] -= v.getX() / 10;
             i[1] -= v.getY() / 10;
         }
     }
 
     public void clear() {
-        smokes = new ArrayList<float[]>();
+        mSmokes = new ArrayList<float[]>();
     }
 }

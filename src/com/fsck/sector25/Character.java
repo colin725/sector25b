@@ -37,10 +37,10 @@ public class Character {
 
         mSpaceman = new Sprite(Bitmap.createScaledBitmap(mMan, width / 5,
                 width / 5, false), 2);
-        mArm1 = Bitmap.createScaledBitmap(mArm1, width * 1 / 30, width * 1 / 40,
-                false);
-        mArm2 = Bitmap.createScaledBitmap(mArm2, width * 1 / 30, width * 1 / 45,
-                false);
+        mArm1 = Bitmap.createScaledBitmap(mArm1, width * 1 / 30,
+                width * 1 / 40, false);
+        mArm2 = Bitmap.createScaledBitmap(mArm2, width * 1 / 30,
+                width * 1 / 45, false);
         mGun = Bitmap.createScaledBitmap(mGun, width * 1 / 13, width * 1 / 26,
                 false);
 
@@ -60,8 +60,8 @@ public class Character {
         mPosition = new Point(mWidth / 2, mHeight * 2 / 5);
         mSmokePosition = new Point(getSmokeX(), getSmokeY());
     }
-    
-    public void reset(){
+
+    public void reset() {
         setPositionDefault();
     }
 

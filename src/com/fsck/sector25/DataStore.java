@@ -29,7 +29,7 @@ public class DataStore implements Serializable {
             if (levels != null) {
                 for (List<LevelScore> l : levels) {
                     for (LevelScore s : l) {
-                        Log.e("MATT", "Name: " + s.name + "; score: " + s.score);
+                        Log.e("MATT", "Name: " + s.name + "; mScore: " + s.score);
                     }
                 }
             }

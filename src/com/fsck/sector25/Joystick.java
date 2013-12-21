@@ -5,79 +5,80 @@ import android.graphics.Paint;
 import android.view.MotionEvent;
 
 public class Joystick {
-    private int width;
-    private int height;
-    private float widthBig;
-    private float widthSmall;
-    private float toEdge;
+
+    private int mWidth;
+    private int mHeight;
+    private float mWidthBig;
+    private float mWidthSmall;
+    private float mToEdge;
 
     /* X and Y of left joystick */
-    private float x1;
-    private float y1;
+    private float mX1;
+    private float mY1;
 
     /* X and Y of right joystick */
-    private float x2;
-    private float y2;
+    private float mX2;
+    private float mY2;
 
     /* Tracking ID of input events for each joystick */
-    int joystickID1 = -1;
-    int joystickID2 = -1;
+    private int mJoystickID1 = -1;
+    private int mJoystickID2 = -1;
 
     public Joystick() {
     }
 
     public void set(int width, int height){
-        this.width = width;
-        this.height = height;
-        widthBig = (float)height/6;
-        widthSmall = (float)height/10;
-        toEdge = 2 * widthBig - widthSmall;
+        mWidth = width;
+        mHeight = height;
+        mWidthBig = (float)height/6;
+        mWidthSmall = (float)height/10;
+        mToEdge = 2 * mWidthBig - mWidthSmall;
     }
 
     public void drawLeft(Canvas canvas, Paint paint){
         paint.setAlpha(75);
-        canvas.drawCircle(toEdge, height - toEdge, widthBig, paint);
+        canvas.drawCircle(mToEdge, mHeight - mToEdge, mWidthBig, paint);
         paint.setAlpha(135);
-        canvas.drawCircle(toEdge + x1, height - toEdge + y1, widthSmall, paint);
+        canvas.drawCircle(mToEdge + mX1, mHeight - mToEdge + mY1, mWidthSmall, paint);
         paint.setAlpha(255);
     }
 
     public void drawRight(Canvas canvas, Paint paint){
         paint.setAlpha(75);
-        canvas.drawCircle(width - toEdge, height - toEdge, widthBig, paint);
+        canvas.drawCircle(mWidth - mToEdge, mHeight - mToEdge, mWidthBig, paint);
         paint.setAlpha(135);
-        canvas.drawCircle(width - toEdge + x2, height - toEdge + y2, widthSmall, paint);
+        canvas.drawCircle(mWidth - mToEdge + mX2, mHeight - mToEdge + mY2, mWidthSmall, paint);
         paint.setAlpha(255);
     }
 
     //return X joystick distance from center from -1 to 1
     public float getX1(){
-        return (x1);
+        return (mX1);
     }
 
     public float getX2(){
-        return (x2);
+        return (mX2);
     }
 
     //return Y joystick distance from center from -1 to 1
     public float getY1(){
-        return (y1);
+        return (mY1);
     }
 
     public float getY2(){
-        return (y2);
+        return (mY2);
     }
 
     private void actionDown(MotionEvent event, int ID){
-        if (Math.sqrt((event.getX(ID)-toEdge)*(event.getX(ID)-toEdge) +
-                (event.getY(ID)-(height-toEdge))*(event.getY(ID)-(height-toEdge))) 
-                < widthBig){
-            joystickID1 = ID;
+        if (Math.sqrt((event.getX(ID)-mToEdge)*(event.getX(ID)-mToEdge) +
+                (event.getY(ID)-(mHeight-mToEdge))*(event.getY(ID)-(mHeight-mToEdge))) 
+                < mWidthBig){
+            mJoystickID1 = ID;
         }
-        if (Math.sqrt((event.getX(ID)-(width-toEdge))*(event.getX(ID)-(width-toEdge)) +
-                (event.getY(ID)-(height-toEdge))*(event.getY(ID)-(height-toEdge))) 
-                < widthBig){
-            joystickID2 = ID;
+        if (Math.sqrt((event.getX(ID)-(mWidth-mToEdge))*(event.getX(ID)-(mWidth-mToEdge)) +
+                (event.getY(ID)-(mHeight-mToEdge))*(event.getY(ID)-(mHeight-mToEdge))) 
+                < mWidthBig){
+            mJoystickID2 = ID;
         }
     }
 
@@ -87,33 +88,33 @@ public class Joystick {
     }
 
     public void actionUp(MotionEvent event, int ID){
-        if(ID == joystickID1){
-            x1 = 0;
-            y1 = 0;
-            joystickID1 = -1;
-        } else if (ID == joystickID2){
-            x2 = 0;
-            y2 = 0;
-            joystickID2 = -1;
+        if(ID == mJoystickID1){
+            mX1 = 0;
+            mY1 = 0;
+            mJoystickID1 = -1;
+        } else if (ID == mJoystickID2){
+            mX2 = 0;
+            mY2 = 0;
+            mJoystickID2 = -1;
         }
     }
 
     public void actionMove(MotionEvent event, int ID){
-        if(event.getPointerId(ID) == joystickID1){
-            x1 = event.getX(ID) - toEdge;
-            y1 = event.getY(ID) - (height - toEdge);
-            double a = Math.sqrt((double) (x1 * x1 + y1 * y1));
-            if (a > widthBig) {
-                x1 = (float) (x1 / a * widthBig);
-                y1 = (float) (y1 / a * widthBig);
+        if(event.getPointerId(ID) == mJoystickID1){
+            mX1 = event.getX(ID) - mToEdge;
+            mY1 = event.getY(ID) - (mHeight - mToEdge);
+            double a = Math.sqrt((double) (mX1 * mX1 + mY1 * mY1));
+            if (a > mWidthBig) {
+                mX1 = (float) (mX1 / a * mWidthBig);
+                mY1 = (float) (mY1 / a * mWidthBig);
             }
-        } else if (event.getPointerId(ID) == joystickID2){
-            x2 = event.getX(ID) - (width - toEdge);
-            y2 = event.getY(ID) - (height - toEdge);
-            double a = Math.sqrt((double) (x2 * x2 + y2 * y2));
-            if (a > widthBig) {
-                x2 = (float) (x2 / a * widthBig);
-                y2 = (float) (y2 / a * widthBig);
+        } else if (event.getPointerId(ID) == mJoystickID2){
+            mX2 = event.getX(ID) - (mWidth - mToEdge);
+            mY2 = event.getY(ID) - (mHeight - mToEdge);
+            double a = Math.sqrt((double) (mX2 * mX2 + mY2 * mY2));
+            if (a > mWidthBig) {
+                mX2 = (float) (mX2 / a * mWidthBig);
+                mY2 = (float) (mY2 / a * mWidthBig);
             }
         }
     }
@@ -147,9 +148,9 @@ public class Joystick {
     }
 
     public void clear() {
-        x1 = 0;
-        y1 = 0;
-        x2 = 0;
-        y2 = 0;
+        mX1 = 0;
+        mY1 = 0;
+        mX2 = 0;
+        mY2 = 0;
     }
 }

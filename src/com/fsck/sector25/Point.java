@@ -2,45 +2,45 @@ package com.fsck.sector25;
 
 public class Point {
 
-    private float x;
-    private float y;
+    private float mX;
+    private float mY;
 
     public Point(){
-        x = 0;
-        y = 0;
+        mX = 0;
+        mY = 0;
     }
     
     public Point(float x, float y) {
-        this.x = x;
-        this.y = y;
+        mX = x;
+        mY = y;
     }
 
     public float getY() {
-        return y;
+        return mY;
     }
 
     public void setY(float y) {
-        this.y = y;
+        mY = y;
     }
 
     public float getX() {
-        return x;
+        return mX;
     }
 
     public void setX(float x) {
-        this.x = x;
+        mX = x;
     }
 
     public float distance(Point p) {
-        double x2 = Math.pow(x - p.x, 2);
-        double y2 = Math.pow(y - p.y, 2);
+        double x2 = Math.pow(mX - p.mX, 2);
+        double y2 = Math.pow(mY - p.mY, 2);
         double r = Math.sqrt(x2 + y2);
         return (float) r;
     }
 
     public Vector unitVecTo(Point p) {
-        float deltaX = p.x - this.x;
-        float deltaY = p.y - this.y;
+        float deltaX = p.mX - mX;
+        float deltaY = p.mY - mY;
 
         Vector temp = new Vector((float) Math.sin(Math.atan2(deltaX, deltaY)),
                 (float) Math.cos(Math.atan2(deltaX, deltaY)));
@@ -48,12 +48,12 @@ public class Point {
     }
 
     public Point move(Vector v) {
-        return new Point(this.x + v.getX(), this.y + v.getY());
+        return new Point(mX + v.getX(), mY + v.getY());
     }
 
     public void subtract(Vector v) {
-        this.x -= v.getX();
-        this.y -= v.getY();
+        mX -= v.getX();
+        mY -= v.getY();
     }
  
     public static Point random(){

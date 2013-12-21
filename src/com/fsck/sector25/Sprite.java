@@ -5,57 +5,57 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 
 public class Sprite {
-    private Bitmap animation;
-    private Rect sRectangle;
-    public int numFrames;
-    public int currentFrame;
-    private int spriteHeight;
-    private int spriteWidth;
-    private int update;
+    private Bitmap mAnimation;
+    private Rect mRectangle;
+    public int mNumFrames;
+    public int mCurrentFrame;
+    private int mSpriteHeight;
+    private int mSpriteWidth;
+    private int mUpdate;
 
     public Sprite() {
     }
 
     public Sprite(Bitmap bitmap, int frameCount) {
-        sRectangle = new Rect(0, 0, 0, 0);
-        currentFrame = 0;
+        mRectangle = new Rect(0, 0, 0, 0);
+        mCurrentFrame = 0;
 
-        this.animation = bitmap;
-        this.spriteHeight = bitmap.getHeight();
-        this.spriteWidth = bitmap.getWidth() / frameCount;
-        this.sRectangle.top = 0;
-        this.sRectangle.bottom = spriteHeight;
-        this.sRectangle.left = 0;
-        this.sRectangle.right = spriteWidth;
-        this.numFrames = frameCount;
+        mAnimation = bitmap;
+        mSpriteHeight = bitmap.getHeight();
+        mSpriteWidth = bitmap.getWidth() / frameCount;
+        mRectangle.top = 0;
+        mRectangle.bottom = mSpriteHeight;
+        mRectangle.left = 0;
+        mRectangle.right = mSpriteWidth;
+        mNumFrames = frameCount;
     }
 
     public void Update() {
-        update++;
-        if (update % 2 == 0) {
-            currentFrame = (currentFrame + 1) % numFrames;
-            sRectangle.left = currentFrame * spriteWidth;
-            sRectangle.right = sRectangle.left + spriteWidth;
+        mUpdate++;
+        if (mUpdate % 2 == 0) {
+            mCurrentFrame = (mCurrentFrame + 1) % mNumFrames;
+            mRectangle.left = mCurrentFrame * mSpriteWidth;
+            mRectangle.right = mRectangle.left + mSpriteWidth;
         }
     }
 
     public void setFrame(int frame) {
-        currentFrame = frame;
-        sRectangle.left = currentFrame * spriteWidth;
-        sRectangle.right = sRectangle.left + spriteWidth;
+        mCurrentFrame = frame;
+        mRectangle.left = mCurrentFrame * mSpriteWidth;
+        mRectangle.right = mRectangle.left + mSpriteWidth;
     }
 
     public int getWidth(){
-        return animation.getWidth()/numFrames;
+        return mAnimation.getWidth()/mNumFrames;
     }
 
     public int getHeight(){
-        return animation.getHeight();
+        return mAnimation.getHeight();
     }
 
     public void draw(Canvas canvas, int x, int y) {
-        Rect dest = new Rect(x - spriteWidth/2, y - spriteHeight/2, x + spriteWidth/2,
-                y + spriteHeight/2);
-        canvas.drawBitmap(animation, sRectangle, dest, null);
+        Rect dest = new Rect(x - mSpriteWidth/2, y - mSpriteHeight/2, x + mSpriteWidth/2,
+                y + mSpriteHeight/2);
+        canvas.drawBitmap(mAnimation, mRectangle, dest, null);
     }
 }

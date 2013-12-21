@@ -9,43 +9,48 @@ import android.graphics.Paint.Style;
 
 public abstract class Enemy {
 
-    protected static int width;
-    protected static int height;
-    protected static final boolean healthbars = false;
+    protected static int mWidth;
+    protected static int mHeight;
+    protected static final boolean mHealthbars = false;
+    protected static final int mRadius = 22;
+    protected Point mPosition;
+    protected Vector mVelocity;
+    protected float mMaxVelocity;
+    protected int mCurrHealth;
+    protected int mAimedAt = 0;
 
-    protected Point position;
-    protected Vector velocity;
-    protected float maxVelocity;
-    protected int currHealth;
-    protected int maxHealth;
-    protected int score;
-    protected int color;
-    protected final int radius = 22;
-
-    private int aimedAt = 0;
-
-    public Enemy(Point characterPos, int maxHealth) {
-
+    public Enemy(Point characterPos) {
     }
 
     public abstract void update(Vector charVelocity, Point characterPos);
+    public abstract int getScore();
+    public abstract int getColor();
+    public abstract int getMaxHealth();
 
-    public abstract float[] getHitBox();
+    public float[] getHitBox() {
+        float[] hitbox = new float[3];
+        hitbox[0] = mPosition.getX();
+        hitbox[1] = mPosition.getY();
+        hitbox[2] = mRadius;
+        return hitbox;
+    }
 
-    public abstract void drawHit(Canvas canvas, Paint paint);
+    public void takeDamage(int damage) {
+        this.mCurrHealth -= damage;
+    }
 
-    public abstract void takeDamage(int damage);
-
-    public abstract boolean isDead();
+    public boolean isDead() {
+        return mCurrHealth <= 0;
+    }
 
     protected void setPosition(Point characterPos) {
         boolean good = false;
         Random r = new Random();
-        // get new position until it isn't on top of the character
+        // get new mPosition until it isn't on top of the character
         while (!good) {
-            this.position.setX((r.nextFloat() * 2 - 0.5f) * 1.5f * width);
-            this.position.setY((r.nextFloat() * 2 - 0.5f) * 1.5f * height);
-            if (position.distance(characterPos) > (height / 2)) {
+            this.mPosition.setX((r.nextFloat() * 2 - 0.5f) * 1.5f * mWidth);
+            this.mPosition.setY((r.nextFloat() * 2 - 0.5f) * 1.5f * mHeight);
+            if (mPosition.distance(characterPos) > (mHeight / 2)) {
                 good = true;
             }
         }
@@ -53,16 +58,14 @@ public abstract class Enemy {
 
     public void draw(Canvas canvas, Paint paint) {
         canvas.save();
-        canvas.translate(position.getX(), position.getY());
+        canvas.translate(mPosition.getX(), mPosition.getY());
 
-        canvas.drawCircle(-radius / 2,
-                -radius / 2, 20, paint);
+        canvas.drawCircle(-getRadius() / 2, -getRadius() / 2, 20, paint);
 
         paint.setStyle(Style.STROKE);
-        paint.setColor(color);
-        paint.setStrokeWidth(radius/3);
-        canvas.drawCircle(-radius / 2,
-                -radius / 2, 20, paint);
+        paint.setColor(getColor());
+        paint.setStrokeWidth(getRadius() / 3);
+        canvas.drawCircle(-getRadius() / 2, -getRadius() / 2, 20, paint);
 
         paint.setStyle(Style.FILL);
         paint.setColor(Color.WHITE);
@@ -70,69 +73,68 @@ public abstract class Enemy {
         canvas.restore();
     }
 
+    public void drawHit(Canvas canvas, Paint paint) {
+        canvas.drawCircle(mPosition.getX(), mPosition.getY(), mRadius, paint);
+    }
+
     public void drawHealth(Canvas canvas, Paint paint) {
-        if(healthbars) {
+        if (mHealthbars) {
             int color = paint.getColor();
-            float healthRatio = ((float) currHealth) / ((float) maxHealth);
-            if (healthRatio <= .2 || (currHealth == 1 && maxHealth > 1)) {
+            float healthRatio = ((float) mCurrHealth) / ((float) getMaxHealth());
+            if (healthRatio <= .2 || (mCurrHealth == 1 && getMaxHealth() > 1)) {
                 paint.setColor(Color.RED);
             } else if (healthRatio <= .5) {
                 paint.setColor(Color.YELLOW);
             } else {
                 paint.setColor(Color.GREEN);
             }
-            canvas.drawRect(-radius / 2, -radius + 5,
-                    -(radius / 2)
-                            + (healthRatio * (radius)),
-                    -radius, paint);
+            canvas.drawRect(-getRadius() / 2, -getRadius() + 5,
+                    -(getRadius() / 2) + (healthRatio * (getRadius())),
+                    -getRadius(), paint);
             paint.setColor(color);
         }
 
         canvas.restore();
     }
 
+    public int getRadius() {
+        return mRadius;
+    }
+
     public float getX() {
-        return position.getX();
+        return mPosition.getX();
     }
 
     public float getY() {
-        return position.getY();
+        return mPosition.getY();
     }
 
     public float getVX() {
-        return velocity.getX();
+        return mVelocity.getX();
     }
 
     public float getVY() {
-        return velocity.getY();
+        return mVelocity.getY();
     }
 
     public int aimed() {
-        return aimedAt;
+        return mAimedAt;
     }
 
     public void aim() {
-        aimedAt = 1;
+        mAimedAt = 1;
     }
 
     public void shot() {
-        aimedAt = 2;
+        mAimedAt = 2;
     }
 
     public Point getPosition() {
-        return position;
+        return mPosition;
     }
 
     public int getCurrHealth() {
-        return currHealth;
-    }
-
-    public int getMaxHealth() {
-        return maxHealth;
-    }
-
-    public int getScore() {
-        return score;
+        return mCurrHealth;
     }
 
     public int getDamage() {

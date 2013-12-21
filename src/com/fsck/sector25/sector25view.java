@@ -48,7 +48,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private Character mCharacter;
         private GameHUD mHud;
         private Bitmap mBackground;
-        private DataStore mDataStore;
+        //private DataStore mDataStore;
 
         /** states */
 
@@ -68,7 +68,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     R.drawable.background);
             mMenu = new Menu();
             mMenu.setHealth(mHud.getHealthbar());
-            mDataStore = new DataStore(1, context);
+            //mDataStore = new DataStore(1, context);
 
         }
 
@@ -297,7 +297,9 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 int actionCode = eventAction & MotionEvent.ACTION_MASK;
 
                 if (mState == GameState.STATE_RUNNING) {
-                    mHud.touch(event);
+                    if (mHud.touch(event)) {
+                        mState = GameState.STATE_PAUSE;
+                    }
                 } else if (mState == GameState.STATE_MENU) {
                     mMenu.touch(event);
                 } else if (actionCode == MotionEvent.ACTION_DOWN) {
@@ -435,16 +437,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         return thread.onTouchEvent(event);
     }
 
-    public static void setGameState(GameState state) {
-        thread.setThreadState(state);
-    }
-
     public static void startGame() {
         thread.startGame();
-    }
-
-    public static GameState getGameState() {
-        return thread.getThreadState();
     }
 
 }
