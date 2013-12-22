@@ -52,17 +52,13 @@ public class Character {
     }
 
     public void setPositionMenu() {
-        mPosition = new Point(mWidth / 3, mHeight / 2);
+        mPosition = new Point((int)(mWidth / 3.5), mHeight / 2);
         mSmokePosition = new Point(getSmokeX(), getSmokeY());
     }
 
     public void setPositionDefault() {
         mPosition = new Point(mWidth / 2, mHeight * 2 / 5);
         mSmokePosition = new Point(getSmokeX(), getSmokeY());
-    }
-
-    public void reset() {
-        setPositionDefault();
     }
 
     public float getShotX() {

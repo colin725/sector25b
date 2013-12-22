@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
@@ -25,13 +26,15 @@ public class GameHUD {
     private static GameStyle mGameStyle;
     private static Handler mHandler;
     private static Bitmap mPause, mPlay;
-    private static Bitmap mTime, mKills;
+    private static Bitmap mTime, mKills, mDistance;
     private static boolean mScoreUpdated = false;
     private static boolean mPaused = false;
-    private static final int mWinCondition = 60;
+    private static int mWinCondition;
+    private static int mStartTime = -1;
+    private static float mTotalDistance = 0;
 
     public enum GameStyle {
-        KILLS, TIME, BOSS
+        KILLS, TIME, BOSS, DISTANCE
     }
 
     public GameHUD(Context context, Handler handler) {
@@ -41,6 +44,7 @@ public class GameHUD {
         mPlay = BitmapFactory.decodeResource(res, R.drawable.play);
         mTime = BitmapFactory.decodeResource(res, R.drawable.time);
         mKills = BitmapFactory.decodeResource(res, R.drawable.kills);
+        mDistance = BitmapFactory.decodeResource(res, R.drawable.distance);
         mJoy = new Joystick();
         mGameStyle = GameStyle.KILLS;
         mHandler = handler;
@@ -60,17 +64,21 @@ public class GameHUD {
     private void drawGameCounter(Canvas canvas, Paint paint) {
         paint.setAlpha(125);
         switch (mGameStyle) {
-            // Survive for mTime
             case KILLS:
-                canvas.drawBitmap(mTime, mWidth * 0.45f, mHeight * 0.77f, paint);
+                canvas.drawBitmap(mKills, mWidth * 0.45f, mHeight * 0.77f, paint);
+                canvas.drawText("" + mGameCounter, mWidth * 0.50f, mHeight * 0.83f, paint);
                 break;
 
-            // Reach x mKills
-            case TIME:
-                canvas.drawBitmap(mKills, mWidth * 0.45f, mHeight * 0.76f, paint);
+            case DISTANCE:
+                canvas.drawBitmap(mDistance, mWidth * 0.42f, mHeight * 0.75f, paint);
+                canvas.drawText(mGameCounter + "m", mWidth * 0.50f, mHeight * 0.83f, paint);
+                break;
+
+            default: //TIME
+                canvas.drawBitmap(mTime, mWidth * 0.45f, mHeight * 0.76f, paint);
+                canvas.drawText("" + (60 - mGameCounter), mWidth * 0.50f, mHeight * 0.83f, paint);
                 break;
         }
-        canvas.drawText("" + mGameCounter, mWidth * 0.50f, mHeight * 0.83f, paint);
         paint.setAlpha(255);
     }
 
@@ -116,6 +124,19 @@ public class GameHUD {
     }
 
     public void update() {
+        if (mGameStyle == GameStyle.TIME) {
+            if (mStartTime == -1) {
+                mStartTime = (int) SystemClock.currentThreadTimeMillis();
+            }
+            int lastTime = mGameCounter;
+            mGameCounter = (int)((SystemClock.currentThreadTimeMillis() - mStartTime) / 1000);
+            if (mGameCounter != lastTime) mScoreUpdated = true;
+        } else if (mGameStyle == GameStyle.DISTANCE) {
+            int lastTime = mGameCounter;
+            mTotalDistance += mJoy.getX1() / 1000;
+            mGameCounter = (int) mTotalDistance;
+            if (mGameCounter != lastTime) mScoreUpdated = true;
+        }
         if (mScoreUpdated)
             mHandler.postDelayed(scoreUpdate, 0);
     }
@@ -153,9 +174,18 @@ public class GameHUD {
         return mHealthBar.isDead();
     }
 
-    public void setScore(int score) {
+    public static void setScore(int score) {
         mScoreUpdated = true;
         mScore = score;
+    }
+
+    public static void incrementScore(int score) {
+        mScoreUpdated = true;
+        mScore += score;
+    }
+
+    public static int getScore() {
+        return mScore;
     }
 
     public boolean win() {
@@ -164,6 +194,25 @@ public class GameHUD {
 
     public static void clear() {
         mGameCounter = 0;
+        mStartTime = -1;
+        mTotalDistance = 0;
         mJoy.clear();
+    }
+
+    public static void setGameStyle(GameStyle gameStyle) {
+        mGameStyle = gameStyle;
+        switch (mGameStyle) {
+        case KILLS:
+            mWinCondition = 90;
+            break;
+
+        case DISTANCE:
+            mWinCondition = 100;
+            break;
+
+        case TIME:
+            mWinCondition = 60;
+            break;
+        }
     }
 }

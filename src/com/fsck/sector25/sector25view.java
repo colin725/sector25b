@@ -34,7 +34,6 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
      */
     class sector25thread extends Thread {
 
-        private int mScore;
         private Paint mPaint = new Paint();
         private SurfaceHolder mSurfaceHolder = null;
         private long mLastTime = 0;
@@ -85,7 +84,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     mLevel.draw(canvas, mPaint);
                     mHud.draw(canvas, mPaint, mState);
                     mCharacter.draw(canvas, mPaint, mState, mMenu.page());
-                    mMenu.draw(canvas, mPaint, mState, mScore);
+                    mMenu.draw(canvas, mPaint, mState);
 
                     canvas.restore();
                 }
@@ -164,17 +163,12 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             Vector charVelocity = mHud.getLeftVector();
             Vector gunDirection = mHud.getRightVector().normalize();
 
-            // Place holder for mScore; arcade mode where mScore
-            // is determined by distance traveled to the right.
-            // mScore += charVelocity.getX();
-            mHud.setScore(mScore);
-
             mHud.update();
 
             mCharacter.update(charVelocity, gunDirection);
             int kills[] = 
                     mLevel.update(charVelocity, mCharacter.getPosition(), false);
-            mScore += kills[1];
+            GameHUD.incrementScore(kills[1]);
             mHud.addKills(kills[0]);
 
             int count = 0;
@@ -307,6 +301,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         mState = GameState.STATE_RUNNING;
                     } else if (mState == GameState.STATE_DEAD) {
                         mState = GameState.STATE_MENU;
+                        mCharacter.setPositionMenu();
                         mMenu.resetPage();
                     } else if (mState == GameState.STATE_WIN) {
                         mState = GameState.STATE_MENU;
@@ -369,9 +364,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         public void startGame() {
-            mScore = 0;
-            mLevel.setLevel(0);
-            mCharacter.reset();
+            mLevel.clear();
+            mCharacter.setPositionDefault();
             mState = GameState.STATE_RUNNING;
         }
 

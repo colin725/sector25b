@@ -127,7 +127,6 @@ public class Level {
                 distance = enemy.getPosition().distance(position);
                 newTarget = true;
                 target = mEnemies.indexOf(enemy);
-                ;
                 aimx = enemy.getX() - position.getX();
                 aimy = enemy.getY() - position.getY();
                 break;
@@ -153,11 +152,6 @@ public class Level {
     public void clear() {
         mEnemies = new ArrayList<Enemy>();
         mSmoke.clear();
-        mProjectiles.clear();
-    }
-
-    public void setLevel(int i) {
-        mEnemies.clear();
         mProjectiles.clear();
     }
 }

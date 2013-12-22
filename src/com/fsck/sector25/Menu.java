@@ -1,5 +1,6 @@
 package com.fsck.sector25;
 
+import com.fsck.sector25.GameHUD.GameStyle;
 import com.fsck.sector25.sector25view.GameState;
 
 import android.content.res.Resources;
@@ -8,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 
 public class Menu {
@@ -142,6 +144,9 @@ public class Menu {
         mButtonY2 = mHeight / 4 * 2.75f;
     }
 
+    /*
+     * Moves the character along the level selection
+     */
     private void mapMove(int position) {
         for(int i = 0; i < mConnection.length; i++){
             mConnection[i][3] = -1;
@@ -160,7 +165,7 @@ public class Menu {
         }
     }
 
-    public void draw(Canvas canvas, Paint paint, GameState state, int score) {
+    public void draw(Canvas canvas, Paint paint, GameState state) {
         // Dull the stuff into background on pause/die/win menus
         if (state == GameState.STATE_PAUSE || state == GameState.STATE_DEAD ||
                 state == GameState.STATE_WIN) {
@@ -197,7 +202,7 @@ public class Menu {
             }
         }
 
-        drawText(canvas, paint, state, score);
+        drawText(canvas, paint, state);
     }
 
     // Draw mPlanets on level path
@@ -231,9 +236,10 @@ public class Menu {
                             - arrowY) / Math.abs(levelX - arrowX)));
 
                     if (connect[3] < 0 || connect[3] > 0 && connect[3] != i) {
-                        // path was not used
+                        // path was not chosen, draw as faded
                         paint.setAlpha(40);
                     }
+
                     canvas.save();
                     canvas.rotate(degrees, arrowX, arrowY);
                     canvas.drawBitmap(mArrow, arrowX - mArrow.getWidth() / 2,
@@ -249,24 +255,26 @@ public class Menu {
     // Draw pop-up mMenu when user selects a level
     private void drawPopup(Canvas canvas, Paint paint) {
         if (mPopup > 0) {
+            // draw the menu background pop-up thing
             canvas.drawBitmap(mPopupmenu, mWidth / 2 - mPopupmenu.getWidth()
                     / 2, mHeight / 2 - mPopupmenu.getHeight() / 2, paint);
+
+            // draw the planet on the pop-up
             canvas.save();
             canvas.scale(2, 2, mWidth / 3.4f, mHeight / 3);
             canvas.drawBitmap(mPlanets[(int) mLevelMap[mPopup][2]], mWidth / 3.4f
                     - mPlanets[(int) mLevelMap[mPopup][2]].getWidth() / 2, mHeight / 3
                     - mPlanets[(int) mLevelMap[mPopup][2]].getHeight() / 2, paint);
             canvas.restore();
-            mHealth.draw(canvas, (int) (mWidth / 3.4f), mHeight / 4 * 3);
-            /*
-             * TODO: scale text according to screen mWidth
-             * http://catchthecows.com/?p=72
-             */
-            canvas.drawText("Current Health", (mWidth / 5f), mHeight / 4 * 2.8f, paint);
-            canvas.drawText("Current Mission:", (mWidth / 5 * 2.5f), mHeight / 4 , paint);
-            canvas.drawText("Survive for", (mWidth / 5 * 2.5f), mHeight / 3.35f , paint);
-            canvas.drawText("60 seconds", (mWidth / 5 * 2.5f), mHeight / 2.9f , paint);
 
+            // show current health on the pop-up
+            canvas.drawText("Current Health", (mWidth / 5.5f), mHeight / 4 * 2.8f, paint);
+            mHealth.draw(canvas, (int) (mWidth / 3.4f), mHeight / 4 * 3);
+
+            // mission text depending on color or selected planet
+            drawMissionTest(canvas, paint);
+
+            // Draw option buttons (start, cancel)
             canvas.drawBitmap(mButton, mButtonX1 - mButton.getWidth() / 2,
                     mButtonY1 - mButton.getHeight() / 2, paint);
             canvas.drawBitmap(mButton, mButtonX2 - mButton.getWidth() / 2,
@@ -275,6 +283,8 @@ public class Menu {
             canvas.drawText("Start", (mWidth / 5 * 3.08f), mHeight / 1.95f , paint);
             canvas.drawText("Cancel", (mWidth / 5 * 3), mHeight / 4 * 2.8f , paint);
             paint.setColor(Color.WHITE);
+
+            // Draw outline around hovered button
             if (mSelected == 1) {
                 canvas.drawBitmap(mSelect3, mButtonX1 - mSelect3.getWidth() / 2,
                         mButtonY1 - mSelect3.getHeight() / 2, paint);
@@ -283,6 +293,36 @@ public class Menu {
                         mButtonY2 - mSelect3.getHeight() / 2, paint);
             }
         }
+    }
+
+    private void drawMissionTest(Canvas canvas, Paint paint) {
+        /*
+         * Draw text for current mission on the level
+         * TODO: scale text according to screen mWidth, center text
+         * http://catchthecows.com/?p=72
+         */
+
+        // default to time
+        String text1 = "Survive for";
+        String text2 = "60 seconds";
+        switch (getGameStyle()) {
+            case KILLS:
+                text1 = "Kill 90";
+                text2 = "enemies";
+                break;
+            case DISTANCE:
+                text1 = "Reach a distance of";
+                text2 = "100m to the right";
+                break;
+            case BOSS:
+                text1 = "Just kill the";
+                text2 = "boss man";
+            break;
+        }
+        canvas.drawText("Current Mission:", (mWidth / 5 * 2.5f), mHeight / 4 , paint);
+        canvas.drawText(text1, (mWidth / 5 * 2.5f), mHeight / 3.35f , paint);
+        canvas.drawText(text2, (mWidth / 5 * 2.5f), mHeight / 2.9f , paint);
+
     }
 
     // Check if user is hovering over a planet in the menu
@@ -334,43 +374,50 @@ public class Menu {
             if (mPage == 0) {
                 // Start screen
                 switch (mSelected) {
-                case 1:
-                    /*
-                     *  Play button.  This starts a new game so reset anything
-                     *  which remains between levels (health).
-                     */
-                    mPage = 1;
-                    mHealth.reset();
-                    setMenuMap(1);
-                    break;
+                    case 1:
+                        /*
+                         *  Play button.  This starts a new game so reset anything
+                         *  which remains between levels (health).
+                         */
+                        mPage = 1;
+                        mHealth.reset();
+                        GameHUD.setScore(0);
+                        setMenuMap(1);
+                        break;
 
-                case 2:
-                    // Arcade
-                    break;
-                case 3:
-                    // Scores
-                    break;
-                case 4:
-                    // About
-                    break;
+                    case 2:
+                        // Arcade
+                        break;
+                    case 3:
+                        // Scores
+                        break;
+                    case 4:
+                        // About
+                        break;
                 }
 
             } else if (mPage == 1) {
-                // Level select screen
+                /*
+                 * Level select screen
+                 */
                 if (mSelected > 0 && mPopup == 0) {
+                    // Selected a planet/level
                     if (mConnection[mMapPosition][0] == mSelected
                             || mConnection[mMapPosition][1] == mSelected
                             || mConnection[mMapPosition][2] == mSelected) {
                         mPopup = mSelected;
                     }
                 } else {
+                    // pop-up to start level
                     if (mSelected == 1) {
-                        // TODO: set up level stuff
+                        // Set up level
                         mapMove(mPopup);
-                        mPopup = 0;
                         GameHUD.clear();
+                        GameHUD.setGameStyle(getGameStyle());
+                        mPopup = 0;
                         sector25view.startGame();
                     } else if (mSelected == 2) {
+                        // cancel
                         mPopup = 0;
                     }
                 }
@@ -381,6 +428,31 @@ public class Menu {
         if (eventAction == MotionEvent.ACTION_MOVE) {
             select(event.getX(0), event.getY(0));
         }
+    }
+
+    private GameStyle getGameStyle() {
+        if (!(mPopup > 0)) {
+            // broken game logic, this shouldn't happen
+            Log.e("S25", "getGameStyle error");
+            return null;
+        }
+        int planetColor = (int)mLevelMap[mPopup][2];
+        GameStyle gs = GameStyle.TIME;
+        switch (planetColor) {
+            case 1:
+                gs = GameStyle.KILLS;
+                break;
+            case 2:
+                gs = GameStyle.DISTANCE;
+                break;
+            case 3:
+                gs = GameStyle.KILLS;
+                break;
+            case 4:
+                gs = GameStyle.DISTANCE;
+                break;
+        }
+        return gs;
     }
 
     public void setHealth(Healthbar health) {
@@ -395,8 +467,9 @@ public class Menu {
         mPage = 0;
     }
 
-    public void drawText(Canvas canvas, Paint paint, GameState state, int score) {
+    public void drawText(Canvas canvas, Paint paint, GameState state) {
         paint.setTextSize(40);
+        int score = GameHUD.getScore();
         if (state == GameState.STATE_DEAD) {
             canvas.drawText("GAME OVER", mWidth / 2 - 100, mHeight / 2, paint);
             canvas.drawText("Score: " + score, mWidth / 2 - 100,
