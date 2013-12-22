@@ -76,9 +76,9 @@ public class GameHUD {
 
     private void drawPauseButton(Canvas canvas, Paint paint) {
         if (mPaused) {
-            canvas.drawBitmap(mPause, mWidth / 15, mWidth / 15, paint);
+            canvas.drawBitmap(mPlay, mWidth / 25, mWidth / 25, paint);
         } else {
-            canvas.drawBitmap(mPlay, mWidth / 15, mWidth / 15, paint);
+            canvas.drawBitmap(mPause, mWidth / 25, mWidth / 25, paint);
         }
     }
 
@@ -90,9 +90,10 @@ public class GameHUD {
         mPlay = Bitmap.createScaledBitmap(mPlay, width / 35, width / 35, false);
         mTime = Bitmap.createScaledBitmap(mTime, width / 30, width / 20, false);
         mKills = Bitmap.createScaledBitmap(mKills, width / 30, width / 20, false);
+        mRect = new Rect(0, 0, mWidth/5, mHeight/5);
     }
 
-    private static final Rect mRect = new Rect(50, 50, 150, 150);
+    private static Rect mRect = new Rect(0, 0, 0, 0);
     public boolean touch(MotionEvent event) {
         if (!mPaused && event.getAction() == MotionEvent.ACTION_DOWN &&
                 mRect.contains((int) event.getX(), (int) event.getY())) {

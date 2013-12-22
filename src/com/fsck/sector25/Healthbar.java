@@ -10,6 +10,7 @@ public class Healthbar {
     private static Bitmap mHealthOutline;
     private static Bitmap mHealthFill;
     public int mHealth = 100;
+    public final int mHealthStart = 100;
 
     public Healthbar() {
     }
@@ -44,5 +45,9 @@ public class Healthbar {
 
     public boolean isDead() {
         return mHealth <= 0;
+    }
+
+    public void reset() {
+        mHealth = mHealthStart;
     }
 }

@@ -332,13 +332,16 @@ public class Menu {
         if (eventAction == MotionEvent.ACTION_UP) {
 
             if (mPage == 0) {
+                // Start screen
                 switch (mSelected) {
                 case 1:
-                    // Play
-                    if (mSelected == 1) {
-                        mPage = 1;
-                        setMenuMap(1);
-                    }
+                    /*
+                     *  Play button.  This starts a new game so reset anything
+                     *  which remains between levels (health).
+                     */
+                    mPage = 1;
+                    mHealth.reset();
+                    setMenuMap(1);
                     break;
 
                 case 2:
@@ -351,7 +354,9 @@ public class Menu {
                     // About
                     break;
                 }
+
             } else if (mPage == 1) {
+                // Level select screen
                 if (mSelected > 0 && mPopup == 0) {
                     if (mConnection[mMapPosition][0] == mSelected
                             || mConnection[mMapPosition][1] == mSelected
