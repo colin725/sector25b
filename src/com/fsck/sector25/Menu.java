@@ -303,9 +303,13 @@ public class Menu {
          */
 
         // default to time
-        String text1 = "Survive for";
-        String text2 = "60 seconds";
+        String text1 = "";
+        String text2 = "";
         switch (getGameStyle()) {
+            case TIME:
+                text1 = "Survive for";
+                text2 = "60 seconds";
+                break;
             case KILLS:
                 text1 = "Kill 90";
                 text2 = "enemies";
@@ -317,7 +321,7 @@ public class Menu {
             case BOSS:
                 text1 = "Just kill the";
                 text2 = "boss man";
-            break;
+                break;
         }
         canvas.drawText("Current Mission:", (mWidth / 5 * 2.5f), mHeight / 4 , paint);
         canvas.drawText(text1, (mWidth / 5 * 2.5f), mHeight / 3.35f , paint);
@@ -439,17 +443,23 @@ public class Menu {
         int planetColor = (int)mLevelMap[mPopup][2];
         GameStyle gs = GameStyle.TIME;
         switch (planetColor) {
-            case 1:
+            case 0:
                 gs = GameStyle.KILLS;
+                break;
+            case 1:
+                gs = GameStyle.TIME;
                 break;
             case 2:
                 gs = GameStyle.DISTANCE;
                 break;
             case 3:
-                gs = GameStyle.KILLS;
+                gs = GameStyle.KILLS; // placeholder
                 break;
             case 4:
-                gs = GameStyle.DISTANCE;
+                gs = GameStyle.DISTANCE; // placeholder
+                break;
+            case 5:
+                gs = GameStyle.BOSS;
                 break;
         }
         return gs;

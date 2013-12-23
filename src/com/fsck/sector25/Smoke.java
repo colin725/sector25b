@@ -1,6 +1,7 @@
 package com.fsck.sector25;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -11,6 +12,7 @@ import android.graphics.Paint;
 public class Smoke {
     ArrayList<float[]> mSmokes = new ArrayList<float[]>();
     private static Bitmap mSprite;
+    protected static final Random mRandom = new Random();
 
     public Smoke(Resources res) {
         mSprite = BitmapFactory.decodeResource(res, R.drawable.smoke);
@@ -20,9 +22,13 @@ public class Smoke {
         for (int i = 0; i < mSmokes.size(); i++) {
             float[] j = mSmokes.get(i);
             paint.setAlpha((int) j[2]);
-            canvas.drawBitmap(mSprite, j[0] - mSprite.getWidth(),
-                    j[1] - mSprite.getHeight(), paint);
+            canvas.rotate(j[5], j[0] - mSprite.getWidth() / 2,
+                    j[1] - mSprite.getHeight() / 2);
+            canvas.drawBitmap(mSprite, j[0] - mSprite.getWidth(), j[1]
+                    - mSprite.getHeight(), paint);
             paint.setAlpha(255);
+            canvas.rotate(-1 * j[5], j[0] - mSprite.getWidth() / 2, j[1]
+                    - mSprite.getHeight() / 2);
         }
     }
 
@@ -44,12 +50,13 @@ public class Smoke {
     }
 
     public void add(Point position, Vector velocity) {
-        float[] newSmoke = new float[5];
+        float[] newSmoke = new float[6];
         newSmoke[0] = position.getX(); // mPosition x
         newSmoke[1] = position.getY(); // mPosition y
         newSmoke[2] = 255; // alpha
         newSmoke[3] = velocity.getX(); // mVelocity x
         newSmoke[4] = velocity.getY(); // mVelocity y
+        newSmoke[5] = mRandom.nextFloat() * 360;
         mSmokes.add(newSmoke);
     }
 

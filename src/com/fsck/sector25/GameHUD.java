@@ -115,11 +115,11 @@ public class GameHUD {
         return false;
     }
 
-    public Vector getLeftVector() {
+    public static Vector getLeftVector() {
         return new Vector(mJoy.getX1(), mJoy.getY1());
     }
 
-    public Vector getRightVector() {
+    public static Vector getRightVector() {
         return new Vector(mJoy.getX2(), mJoy.getY2());
     }
 
@@ -162,7 +162,7 @@ public class GameHUD {
         mScoreText = view;
     }
 
-    public void incrementHealth(int increment) {
+    public static void incrementHealth(int increment) {
         mHealthBar.incrementHealth(increment);
     }
 
@@ -202,17 +202,29 @@ public class GameHUD {
     public static void setGameStyle(GameStyle gameStyle) {
         mGameStyle = gameStyle;
         switch (mGameStyle) {
-        case KILLS:
-            mWinCondition = 90;
-            break;
+            case KILLS:
+                mWinCondition = 90;
+                break;
 
-        case DISTANCE:
-            mWinCondition = 100;
-            break;
+            case DISTANCE:
+                mWinCondition = 100;
+                break;
 
-        case TIME:
-            mWinCondition = 60;
-            break;
+            case TIME:
+                mWinCondition = 60;
+                break;
+
+            case BOSS:
+                mWinCondition = 1;
+                break;
         }
+    }
+
+    public static GameStyle getGameStyle() {
+        return mGameStyle;
+    }
+
+    public static void bossKill() {
+        mGameCounter++;
     }
 }

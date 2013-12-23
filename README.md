@@ -24,8 +24,10 @@ Sector25 (working name, hopefully someone has something better)
 	type of stuff with bronze/silver/gold marks to beat.  Something easy to play for a few minutes without starting
 	the real game.  Likely tie it to achievements as well.
 - Scores screen local for now, divided between easy and normal modes (have to beat easy to unlock normal).
-- Gameplay styles.  Each color of planet will represent a different kind of gameplay.  Easy ideas so far are Kills, Time, 
-	and distance.  Complex ideas will make the game a lot more interesting but represent new challenges with
+- Gameplay styles.  Each color of planet will represent a different kind of gameplay.  Easy ideas so far are Kills, 
+	Time, and distance.  Distance should eventually spawn enemies based on distance rather than time, so if you go too
+	fast you get swamped with enemies.  Going slow will be safe be not rewarding in points or score.
+	Complex ideas will make the game a lot more interesting but represent new challenges with
 	the implementation.  The next one to add could be defense of structures or conversely destroying structures.
 	Another idea could be something like to recieve an item and come back.  Or go through some kind of maze.
 	The last two would be extremely difficult to do without having static maps.  So we would either have to spend
@@ -54,6 +56,7 @@ Sector25 (working name, hopefully someone has something better)
   best solution is to it.  Right now we'll just resize everything based on either width or height.  Hitboxes
   will need to resize with the images, right now they don't (and enemies aren't resized either yet).  Luckily
   we should have plenty of devices to test this on and can use emulators to look at the extremes eventually.
+  Not all of our images even resize right now (projectiles and stuff), should double check at some point.
 - Resource management.  Hopefully we can avoid this.  If the number of graphics stay small enough it can all be in
 	memory.  Might just have to restrict devices to 4.0+ to assure they have sufficient memory space and processing
 	power.  Otherwise we could at least implement loading enemy bitmaps depending on if they are needed for that

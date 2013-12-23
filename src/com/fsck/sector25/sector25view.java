@@ -22,7 +22,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
     private static sector25thread thread;
 
-    public static final float VELOCITY_SCALE = .2f;
+    public static final float VELOCITY_SCALE = .125f;
     public static final boolean DRAW_HITBOXES = false;
 
     public enum GameState {
@@ -91,7 +91,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                 if (DRAW_HITBOXES) {
                     mCharacter.drawHit(canvas, mPaint);
-                    mLevel.drawHit(canvas);
+                    mLevel.drawHit(canvas, mPaint);
                 }
             }
         }
@@ -113,9 +113,11 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     if (mState == GameState.STATE_RUNNING) {
                         updateRunning(now, elapsedShot);
                         updateSmoke(now, elapsedSmoke);
+                        updateEnemies(now);
                     } else if (mState == GameState.STATE_MENU) {
                         updateMenu();
                         updateSmoke(now, elapsedSmoke);
+                        updateEnemies(now);
                     } else if (mState == GameState.STATE_PAUSE) {
                         updatePaused();
                     } else if (mState == GameState.STATE_DEAD) {
@@ -127,54 +129,56 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
+        private void updateEnemies(long now) {
+            if (!(mState == GameState.STATE_MENU && mMenu.page() == 1)) {
+                mLevel.addEnemies(now);
+            }
+        }
+
         private void updateDead() {
-            mLevel.update(new Vector(15, 0), mCharacter.getPosition(), true);
+            mLevel.update(new Vector(15, 0), true);
         }
 
         private void updatePaused() {
-            mLevel.update(new Vector(15, 0), mCharacter.getPosition(), true);
+            mLevel.update(new Vector(15, 0), true);
         }
 
         private void updateSmoke(long now, double elapsedSmoke) {
             // add smoke
             if (elapsedSmoke > 300) {
                 if (!(mState == GameState.STATE_MENU && mMenu.page() == 1)) {
-                    mLevel.addSmoke(mCharacter.getSmokePosition(),
-                            mCharacter.getSmokeVelocity());
-                    // placeholder adding enemies
-                    mLevel.addEnemy(mCharacter.getPosition());
+                    mLevel.addSmoke();
                 }
                 mLastSmoke = now;
             }
         }
 
         private void updateMenu() {
-            mLevel.update(new Vector(15, 0), mCharacter.getPosition(), false);
+            mLevel.update(new Vector(15, 0), false);
             mCharacter.update(
                     new Vector(0, 0),
-                    mLevel.menuShoot(mCharacter.getPosition(),
-                            mCharacter.getShotX(), mCharacter.getShotY()));
+                    mLevel.menuShoot());
             if (mMenu.page() == 1) {
                 mLevel.clear();
             }
         }
 
         private void updateRunning(long now, double elapsedShot) {
-            Vector charVelocity = mHud.getLeftVector();
-            Vector gunDirection = mHud.getRightVector().normalize();
+            Vector charVelocity = GameHUD.getLeftVector();
+            Vector gunDirection = GameHUD.getRightVector().normalize();
 
             mHud.update();
 
             mCharacter.update(charVelocity, gunDirection);
             int kills[] = 
-                    mLevel.update(charVelocity, mCharacter.getPosition(), false);
+                    mLevel.update(charVelocity, false);
             GameHUD.incrementScore(kills[1]);
             mHud.addKills(kills[0]);
 
             int count = 0;
             ArrayList<Integer> remove = new ArrayList<Integer>();
             for (Enemy enemy : mLevel.getEnemies()) {
-                if (mCharacter.testHit(enemy.getHitBox())) {
+                if (!(enemy instanceof Boss1) && Character.testCollision(enemy.getHitBox())) {
                     mHud.takeDamage(enemy.getDamage());
                     remove.add(count);
                 }
@@ -187,8 +191,8 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             // shoot (place holder, will have to create different
             // shots/upgrades)
             if (elapsedShot > 100) {
-                if (mLevel.shoot(gunDirection, mCharacter.getShotX(),
-                        mCharacter.getShotY())) {
+                if (mLevel.shoot(gunDirection, Character.getShotX(),
+                        Character.getShotY())) {
                     mLastShot = now;
                 }
             }
@@ -270,17 +274,18 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             synchronized (mSurfaceHolder) {
                 this.mWidth = width;
                 this.mHeight = height;
-                mCharacter.setSize(width, height);
-                mCharacter.setPositionMenu();
+                Character.setSize(width, height);
+                Character.setPositionMenu();
                 mLevel.setSize(width, height);
                 mHud.setSize(width, height);
                 mBackground = Bitmap.createScaledBitmap(mBackground, width,
                         height, false);
                 // need to do this for every enemy type, not sure if there is a
                 // better way.
-                Cylon.setSize(getResources(), width, height);
-                Wyrm.setSize(getResources(), width, height);
+                Cylon.setSize(width, height);
+                Wyrm.setSize(width, height);
                 Menu.setSize(getResources(), width, height);
+                Projectiles.setmMaxDistance(2 * width);
                 mSurfaceSizeSet = true;
             }
         }
@@ -301,7 +306,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                         mState = GameState.STATE_RUNNING;
                     } else if (mState == GameState.STATE_DEAD) {
                         mState = GameState.STATE_MENU;
-                        mCharacter.setPositionMenu();
+                        Character.setPositionMenu();
                         mMenu.resetPage();
                     } else if (mState == GameState.STATE_WIN) {
                         mState = GameState.STATE_MENU;
@@ -365,7 +370,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         public void startGame() {
             mLevel.clear();
-            mCharacter.setPositionDefault();
+            Character.setPositionDefault();
             mState = GameState.STATE_RUNNING;
         }
 

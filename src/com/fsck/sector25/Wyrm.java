@@ -2,31 +2,23 @@ package com.fsck.sector25;
 
 import java.util.Random;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.SystemClock;
 
 public class Wyrm extends Enemy {
 
-    protected static int mEnemyDrawable;
-    protected static Bitmap mSprite;
     protected static int mMaxHealth = 5;
     protected static int mColor = Color.YELLOW;
     protected static int mScore = 50;
     private int mRotationDirection;
+    protected long mLastShot;
     private Point mRotationCenter;
 
-    static {
-        mEnemyDrawable = R.drawable.cylon;
-    }
-
-    public Wyrm(Point characterPos) {
-        super(characterPos);
+    public Wyrm() {
         mPosition = new Point(0, 0);
         mRotationCenter = new Point(0, 0);
         mVelocity = new Vector(0, 0);
-        setPosition(characterPos);
+        setPosition();
         mCurrHealth = mMaxHealth;
         Random r = new Random();
         mMaxVelocity = 4 + r.nextFloat() * 4;
@@ -34,10 +26,10 @@ public class Wyrm extends Enemy {
     }
 
     @Override
-    protected void setPosition(Point charPoint) {
-        super.setPosition(charPoint);
-        Vector direction = mPosition.unitVecTo(charPoint);
-        float dist = mPosition.distance(charPoint) / 2;
+    protected void setPosition() {
+        super.setPosition();
+        Vector direction = mPosition.unitVecTo(Character.getPosition());
+        float dist = mPosition.distance(Character.getPosition()) / 2;
         mRotationCenter.setX(direction.getX() * dist);
         mRotationCenter.setY(direction.getY() * dist);
         mVelocity = mPosition.unitVecTo(mRotationCenter)
@@ -46,14 +38,14 @@ public class Wyrm extends Enemy {
     }
 
     @Override
-    public void update(Vector charVelocity, Point characterPos) {
+    public void update(Vector charVelocity) {
         // Calculate direction, scale up to mVelocity, subtract char mVelocity,
         // add small amount of randomness
         // mVelocity = mPosition.unitVecTo(characterPos)
         // .add(charVelocity.normalize()).scale(mMaxVelocity)
         // .sub(charVelocity).add(Vector.random());
 
-        Vector v = mRotationCenter.unitVecTo(characterPos);
+        Vector v = mRotationCenter.unitVecTo(Character.getPosition());
         mRotationCenter = mRotationCenter.move(v);
 
         mVelocity = mVelocity.add(mPosition.unitVecTo(mRotationCenter))
@@ -63,20 +55,17 @@ public class Wyrm extends Enemy {
 
         // jump around if character runs too far away
         // intent is to make the player not be able to run away forever
-        if (mPosition.distance(characterPos) > 2 * mWidth) {
-            setPosition(characterPos);
+        if (mPosition.distance(Character.getPosition()) > 2 * mWidth) {
+            setPosition();
         }
         mPosition = mPosition.move(mVelocity);
-    }
 
-    // is there a good pattern to have this in the base class without being
-    // ugly?
-    public static void setSize(Resources res, int screenWidth, int screenHeight) {
-        mWidth = screenWidth;
-        mHeight = screenHeight;
-        mSprite = BitmapFactory.decodeResource(res, mEnemyDrawable);
-        mSprite = Bitmap.createScaledBitmap(mSprite, (int) (mWidth / 20),
-                (int) (mWidth / 20), false);
+        if (SystemClock.currentThreadTimeMillis() - mLastShot > 6000) {
+            int vx = (int) (Character.getX() - mPosition.getX());
+            int vy = (int) (Character.getY() - mPosition.getY());
+            Projectiles.add(mPosition.getX(), mPosition.getY(), vx, vy, 1, 10);
+            mLastShot = SystemClock.currentThreadTimeMillis();
+        }
     }
 
     @Override

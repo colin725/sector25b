@@ -12,17 +12,17 @@ public abstract class Enemy {
     protected static int mWidth;
     protected static int mHeight;
     protected static final boolean mHealthbars = false;
-    protected static final int mRadius = 22;
+    protected int mRadius = 22;
     protected Point mPosition;
     protected Vector mVelocity;
     protected float mMaxVelocity;
     protected int mCurrHealth;
     protected int mAimedAt = 0;
 
-    public Enemy(Point characterPos) {
+    public Enemy() {
     }
 
-    public abstract void update(Vector charVelocity, Point characterPos);
+    public abstract void update(Vector charVelocity);
     public abstract int getScore();
     public abstract int getColor();
     public abstract int getMaxHealth();
@@ -43,29 +43,34 @@ public abstract class Enemy {
         return mCurrHealth <= 0;
     }
 
-    protected void setPosition(Point characterPos) {
+    protected void setPosition() {
         boolean good = false;
         Random r = new Random();
         // get new mPosition until it isn't on top of the character
         while (!good) {
             this.mPosition.setX((r.nextFloat() * 2 - 0.5f) * 1.5f * mWidth);
             this.mPosition.setY((r.nextFloat() * 2 - 0.5f) * 1.5f * mHeight);
-            if (mPosition.distance(characterPos) > (mHeight / 2)) {
+            if (mPosition.distance(Character.getPosition()) > (mHeight / 2)) {
                 good = true;
             }
         }
+    }
+
+    public static void setSize(int screenWidth, int screenHeight) {
+        mWidth = screenWidth;
+        mHeight = screenHeight;
     }
 
     public void draw(Canvas canvas, Paint paint) {
         canvas.save();
         canvas.translate(mPosition.getX(), mPosition.getY());
 
-        canvas.drawCircle(-getRadius() / 2, -getRadius() / 2, 20, paint);
+        canvas.drawCircle(0, 0, mRadius, paint);
 
         paint.setStyle(Style.STROKE);
         paint.setColor(getColor());
         paint.setStrokeWidth(getRadius() / 3);
-        canvas.drawCircle(-getRadius() / 2, -getRadius() / 2, 20, paint);
+        canvas.drawCircle(0, 0, mRadius, paint);
 
         paint.setStyle(Style.FILL);
         paint.setColor(Color.WHITE);
@@ -139,5 +144,9 @@ public abstract class Enemy {
 
     public int getDamage() {
         return 5;
+    }
+
+    public void setRadius(int radius) {
+        mRadius = radius;
     }
 }
