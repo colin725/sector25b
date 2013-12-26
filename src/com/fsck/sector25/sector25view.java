@@ -3,6 +3,8 @@ package com.fsck.sector25;
 import java.lang.Thread.State;
 import java.util.ArrayList;
 
+import com.fsck.sector25.Menu.MenuPage;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -12,7 +14,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -53,12 +54,11 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         private GameState mState = GameState.STATE_MENU;
 
-        public sector25thread(SurfaceHolder surfaceHolder, Context context,
-                Handler handler) {
+        public sector25thread(SurfaceHolder surfaceHolder, Context context) {
             Resources res = context.getResources();
 
             mSurfaceHolder = surfaceHolder;
-            mHud = new GameHUD(context, handler);
+            mHud = new GameHUD(context);
             mCharacter = new Character(res);
             mLevel = new Level(0, res);
             mPaint.setColor(Color.WHITE);
@@ -83,7 +83,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
                     mLevel.draw(canvas, mPaint);
                     mHud.draw(canvas, mPaint, mState);
-                    mCharacter.draw(canvas, mPaint, mState, mMenu.page());
+                    mCharacter.draw(canvas, mPaint, mState, Menu.getPage());
                     mMenu.draw(canvas, mPaint, mState);
 
                     canvas.restore();
@@ -130,7 +130,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         private void updateEnemies(long now) {
-            if (!(mState == GameState.STATE_MENU && mMenu.page() == 1)) {
+            if (!(mState == GameState.STATE_MENU && Menu.getPage() == MenuPage.LEVELSELECT)) {
                 mLevel.addEnemies(now);
             }
         }
@@ -146,7 +146,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
         private void updateSmoke(long now, double elapsedSmoke) {
             // add smoke
             if (elapsedSmoke > 300) {
-                if (!(mState == GameState.STATE_MENU && mMenu.page() == 1)) {
+                if (!(mState == GameState.STATE_MENU && Menu.getPage() == MenuPage.LEVELSELECT)) {
                     mLevel.addSmoke();
                 }
                 mLastSmoke = now;
@@ -158,7 +158,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             mCharacter.update(
                     new Vector(0, 0),
                     mLevel.menuShoot());
-            if (mMenu.page() == 1) {
+            if (Menu.getPage() == MenuPage.LEVELSELECT) {
                 mLevel.clear();
             }
         }
@@ -381,7 +381,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
-        thread = new sector25thread(holder, context, new Handler() {});
+        thread = new sector25thread(holder, context);
         setFocusable(true);
     }
 
@@ -409,8 +409,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder) {
 
         if (!(thread.getState() == State.NEW)) {
-            thread = new sector25thread(holder, this.getContext(), 
-                    new Handler() {});
+            thread = new sector25thread(holder, this.getContext());
         }
         thread.setRunning(true);
         thread.start();

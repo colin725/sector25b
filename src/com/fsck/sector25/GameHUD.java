@@ -1,5 +1,6 @@
 package com.fsck.sector25;
 
+import com.fsck.sector25.Menu.MenuPage;
 import com.fsck.sector25.sector25view.GameState;
 
 import android.content.Context;
@@ -9,10 +10,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.os.Handler;
 import android.os.SystemClock;
 import android.view.MotionEvent;
-import android.widget.TextView;
 
 //Class to maintain the joysticks, mHealth bar, mPause button, etc
 public class GameHUD {
@@ -20,14 +19,11 @@ public class GameHUD {
     private static Healthbar mHealthBar;
     private static Joystick mJoy;
     private static int mHeight, mWidth;
-    private static TextView mScoreText;
     private static int mScore;
     private static int mGameCounter;
     private static GameStyle mGameStyle;
-    private static Handler mHandler;
     private static Bitmap mPause, mPlay;
     private static Bitmap mTime, mKills, mDistance;
-    private static boolean mScoreUpdated = false;
     private static boolean mPaused = false;
     private static int mWinCondition;
     private static int mStartTime = -1;
@@ -37,7 +33,7 @@ public class GameHUD {
         KILLS, TIME, BOSS, DISTANCE
     }
 
-    public GameHUD(Context context, Handler handler) {
+    public GameHUD(Context context) {
         Resources res = context.getResources();
         mHealthBar = new Healthbar(res);
         mPause = BitmapFactory.decodeResource(res, R.drawable.pause);
@@ -47,7 +43,6 @@ public class GameHUD {
         mDistance = BitmapFactory.decodeResource(res, R.drawable.distance);
         mJoy = new Joystick();
         mGameStyle = GameStyle.KILLS;
-        mHandler = handler;
     }
 
     public void draw(Canvas canvas, Paint paint, GameState state) {
@@ -58,6 +53,14 @@ public class GameHUD {
             mHealthBar.draw(canvas, mWidth / 2, mHeight * 9 / 10);
             drawPauseButton(canvas, paint);
             drawGameCounter(canvas, paint);
+        }
+
+        // TODO: scale text by screen size
+        if (Menu.getPage() != MenuPage.MAINMENU) {
+            paint.setTextSize(30);
+            paint.setAlpha(150);
+            canvas.drawText("Score: " + mScore, mWidth - 200, 35, paint);
+            paint.setAlpha(255);
         }
     }
 
@@ -128,26 +131,12 @@ public class GameHUD {
             if (mStartTime == -1) {
                 mStartTime = (int) SystemClock.currentThreadTimeMillis();
             }
-            int lastTime = mGameCounter;
             mGameCounter = (int)((SystemClock.currentThreadTimeMillis() - mStartTime) / 1000);
-            if (mGameCounter != lastTime) mScoreUpdated = true;
         } else if (mGameStyle == GameStyle.DISTANCE) {
-            int lastTime = mGameCounter;
             mTotalDistance += mJoy.getX1() / 1000;
             mGameCounter = (int) mTotalDistance;
-            if (mGameCounter != lastTime) mScoreUpdated = true;
         }
-        if (mScoreUpdated)
-            mHandler.postDelayed(scoreUpdate, 0);
     }
-
-    private Runnable scoreUpdate = new Runnable() {
-        public void run() {
-
-            if (mScoreText != null)
-                mScoreText.setText("Score: " + mScore + "  ");
-        }
-    };
 
     public void addKills(int kills) {
         if (mGameStyle.equals(GameStyle.KILLS))
@@ -156,10 +145,6 @@ public class GameHUD {
 
     public Healthbar getHealthbar() {
         return mHealthBar;
-    }
-
-    public void setTextView(TextView view) {
-        mScoreText = view;
     }
 
     public static void incrementHealth(int increment) {
@@ -175,12 +160,10 @@ public class GameHUD {
     }
 
     public static void setScore(int score) {
-        mScoreUpdated = true;
         mScore = score;
     }
 
     public static void incrementScore(int score) {
-        mScoreUpdated = true;
         mScore += score;
     }
 

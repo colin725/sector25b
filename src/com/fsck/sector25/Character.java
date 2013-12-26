@@ -1,5 +1,6 @@
 package com.fsck.sector25;
 
+import com.fsck.sector25.Menu.MenuPage;
 import com.fsck.sector25.sector25view.GameState;
 
 import android.content.res.Resources;
@@ -144,9 +145,9 @@ public class Character {
 
     }
 
-    public void draw(Canvas canvas, Paint paint, GameState state, int page) {
+    public void draw(Canvas canvas, Paint paint, GameState state, MenuPage page) {
 
-        if (!(state == GameState.STATE_MENU && page != 0)) {
+        if (!(state == GameState.STATE_MENU && page != MenuPage.MAINMENU)) {
 
             canvas.save();
             canvas.translate(mPosition.getX(), mPosition.getY());

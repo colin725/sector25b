@@ -3,7 +3,6 @@ package com.fsck.sector25;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.widget.TextView;
 
 /**
  * This is a simple lab725 activity that houses a single sector25view.
@@ -21,8 +20,6 @@ public class sector25activity extends Activity {
         setContentView(R.layout.s25);
 
         sector25view = (sector25view) findViewById(R.id.s25);
-        sector25view.getThread().getHUD()
-                .setTextView((TextView) findViewById(R.id.ScoreText));
         if (savedInstanceState != null) {
             sector25view.getThread().restoreState(savedInstanceState);
         }

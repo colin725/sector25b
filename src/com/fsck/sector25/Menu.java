@@ -14,7 +14,7 @@ import android.view.MotionEvent;
 
 public class Menu {
 
-    private int mPage;
+    private static MenuPage mPage = MenuPage.MAINMENU;
     private static int mWidth;
     private static int mHeight;
     private static Bitmap mMenu;
@@ -37,6 +37,10 @@ public class Menu {
     private int[][] mConnection;
     private static Bitmap[] mPlanets;
     private static Bitmap mArrow;
+
+    public enum MenuPage {
+        MAINMENU, LEVELSELECT
+    }
 
     public Menu() {
     }
@@ -175,34 +179,30 @@ public class Menu {
         if (state == GameState.STATE_MENU) {
             // TODO: Animate mMenu in and out
 
-            /*
-             * Page 0: Main mMenu
-             */
-            if (mPage == 0) {
-                canvas.drawBitmap(mMenu, mWidth - mMenu.getWidth(), 0, paint);
-                if (mSelected > 0) {
-                    canvas.drawBitmap(mSelect, mWidth - mSelect.getWidth(), mSelected
+            switch (mPage) {
+                case MAINMENU:
+                    canvas.drawBitmap(mMenu, mWidth - mMenu.getWidth(), 0, paint);
+                    if (mSelected > 0) {
+                        canvas.drawBitmap(mSelect, mWidth - mSelect.getWidth(), mSelected
                             * mHeight / 4.45f - mHeight / 8, paint);
-                }
-            } 
+                    }
+                    break;
 
-            /*
-             * Page 1: Map / level selection
-             */
-            else if (mPage == 1) {
-                //draw mSelected circle if hovering/mSelected
-                if (mSelected > 0) {
-                    canvas.drawBitmap(mSel, mLevelMap[mSelected][0] - mSel.getWidth() / 2,
-                            mLevelMap[mSelected][1] - mSel.getHeight() / 2, paint);
-                }
-
-                drawPlanets(canvas, paint);
-                drawConnections(canvas, paint);
-                drawPopup(canvas, paint);
+                case LEVELSELECT:
+                    //draw mSelected circle if hovering/mSelected
+                    if (mSelected > 0) {
+                        canvas.drawBitmap(mSel, mLevelMap[mSelected][0] - mSel.getWidth() / 2,
+                                mLevelMap[mSelected][1] - mSel.getHeight() / 2, paint);
+                    }
+    
+                    drawPlanets(canvas, paint);
+                    drawConnections(canvas, paint);
+                    drawPopup(canvas, paint);
+                    break;
             }
         }
 
-        drawText(canvas, paint, state);
+        drawMiscText(canvas, paint, state);
     }
 
     // Draw mPlanets on level path
@@ -255,6 +255,8 @@ public class Menu {
     // Draw pop-up mMenu when user selects a level
     private void drawPopup(Canvas canvas, Paint paint) {
         if (mPopup > 0) {
+            paint.setTextSize(40);
+
             // draw the menu background pop-up thing
             canvas.drawBitmap(mPopupmenu, mWidth / 2 - mPopupmenu.getWidth()
                     / 2, mHeight / 2 - mPopupmenu.getHeight() / 2, paint);
@@ -329,10 +331,25 @@ public class Menu {
 
     }
 
+    public void drawMiscText(Canvas canvas, Paint paint, GameState state) {
+        paint.setTextSize(40);
+        int score = GameHUD.getScore();
+        if (state == GameState.STATE_DEAD) {
+            canvas.drawText("GAME OVER", mWidth / 2 - 100, mHeight / 2, paint);
+            canvas.drawText("Score: " + score, mWidth / 2 - 100,
+                    mHeight / 2 + 100, paint);
+        } else if (state == GameState.STATE_WIN) {
+            canvas.drawText("Level complete!", mWidth / 2 - 100, mHeight / 2,
+                    paint);
+            canvas.drawText("Score: " + score, mWidth / 2 - 100,
+                    mHeight / 2 + 100, paint);
+        }
+    }
+
     // Check if user is hovering over a planet in the menu
     private void select(float x, float y) {
         mSelected = 0;
-        if (mPage == 0) {
+        if (mPage == MenuPage.MAINMENU) {
             for (int i = 0; i < mButtons.length; i++) {
                 if (x > mButtons[i][0] && x < mButtons[i][2] && y > mButtons[i][1]
                         && y < mButtons[i][3]) {
@@ -374,57 +391,58 @@ public class Menu {
         }
 
         if (eventAction == MotionEvent.ACTION_UP) {
-
-            if (mPage == 0) {
-                // Start screen
-                switch (mSelected) {
-                    case 1:
-                        /*
-                         *  Play button.  This starts a new game so reset anything
-                         *  which remains between levels (health).
-                         */
-                        mPage = 1;
-                        mHealth.reset();
-                        GameHUD.setScore(0);
-                        setMenuMap(1);
-                        break;
-
-                    case 2:
-                        // Arcade
-                        break;
-                    case 3:
-                        // Scores
-                        break;
-                    case 4:
-                        // About
-                        break;
-                }
-
-            } else if (mPage == 1) {
-                /*
-                 * Level select screen
-                 */
-                if (mSelected > 0 && mPopup == 0) {
-                    // Selected a planet/level
-                    if (mConnection[mMapPosition][0] == mSelected
-                            || mConnection[mMapPosition][1] == mSelected
-                            || mConnection[mMapPosition][2] == mSelected) {
-                        mPopup = mSelected;
+            switch (mPage) {
+                case MAINMENU:
+                    switch (mSelected) {
+                        case 1:
+                            /*
+                             *  Play button.  This starts a new game so reset anything
+                             *  which remains between levels (health).
+                             */
+                            mPage = MenuPage.LEVELSELECT;
+                            mHealth.reset();
+                            GameHUD.setScore(0);
+                            setMenuMap(1);
+                            break;
+    
+                        case 2:
+                            // Arcade
+                            break;
+                        case 3:
+                            // Scores
+                            break;
+                        case 4:
+                            // About
+                            break;
                     }
-                } else {
-                    // pop-up to start level
-                    if (mSelected == 1) {
-                        // Set up level
-                        mapMove(mPopup);
-                        GameHUD.clear();
-                        GameHUD.setGameStyle(getGameStyle());
-                        mPopup = 0;
-                        sector25view.startGame();
-                    } else if (mSelected == 2) {
-                        // cancel
-                        mPopup = 0;
+                    break;
+
+                case LEVELSELECT:
+                    /*
+                     * Level select screen
+                     */
+                    if (mSelected > 0 && mPopup == 0) {
+                        // Selected a planet/level
+                        if (mConnection[mMapPosition][0] == mSelected
+                                || mConnection[mMapPosition][1] == mSelected
+                                || mConnection[mMapPosition][2] == mSelected) {
+                            mPopup = mSelected;
+                        }
+                    } else {
+                        // pop-up to start level
+                        if (mSelected == 1) {
+                            // Set up level
+                            mapMove(mPopup);
+                            GameHUD.clear();
+                            GameHUD.setGameStyle(getGameStyle());
+                            mPopup = 0;
+                            sector25view.startGame();
+                        } else if (mSelected == 2) {
+                            // cancel
+                            mPopup = 0;
+                        }
                     }
-                }
+                    break;
             }
             mSelected = 0;
         }
@@ -469,26 +487,11 @@ public class Menu {
         this.mHealth = health;
     }
 
-    public int page() {
-        return mPage;
-    }
-    
     public void resetPage(){
-        mPage = 0;
+        mPage = MenuPage.MAINMENU;
     }
 
-    public void drawText(Canvas canvas, Paint paint, GameState state) {
-        paint.setTextSize(40);
-        int score = GameHUD.getScore();
-        if (state == GameState.STATE_DEAD) {
-            canvas.drawText("GAME OVER", mWidth / 2 - 100, mHeight / 2, paint);
-            canvas.drawText("Score: " + score, mWidth / 2 - 100,
-                    mHeight / 2 + 100, paint);
-        } else if (state == GameState.STATE_WIN) {
-            canvas.drawText("Level complete!", mWidth / 2 - 100, mHeight / 2,
-                    paint);
-            canvas.drawText("Score: " + score, mWidth / 2 - 100,
-                    mHeight / 2 + 100, paint);
-        }
+    public static MenuPage getPage() {
+        return mPage;
     }
 }
