@@ -32,6 +32,7 @@ public class Menu {
     private int mPopup;
     private int mMapPosition;
     private Healthbar mHealth;
+    private Energybar mEnergy;
     private static int[][] mButtons;
     private float mLevelMap[][];
     private int[][] mConnection;
@@ -401,6 +402,7 @@ public class Menu {
                              */
                             mPage = MenuPage.LEVELSELECT;
                             mHealth.reset();
+                            mEnergy.reset();
                             GameHUD.setScore(0);
                             setMenuMap(1);
                             break;
@@ -485,6 +487,10 @@ public class Menu {
 
     public void setHealth(Healthbar health) {
         this.mHealth = health;
+    }
+    
+    public void setEnergy(Energybar energy) {
+        this.mEnergy = energy;
     }
 
     public void resetPage(){
