@@ -1,5 +1,6 @@
 package com.fsck.sector25;
 
+import com.fsck.sector25.sector25view.GameState;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
@@ -10,7 +11,7 @@ import android.os.Bundle;
 public class sector25activity extends Activity {
 
     /** The view which draws the game */
-    private sector25view sector25view;
+    private sector25view s25view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,34 +20,37 @@ public class sector25activity extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.s25);
 
-        sector25view = (sector25view) findViewById(R.id.s25);
+        s25view = (sector25view) findViewById(R.id.s25);
         if (savedInstanceState != null) {
-            sector25view.getThread().restoreState(savedInstanceState);
+            s25view.getThread().restoreState(savedInstanceState);
         }
     }
 
-    /**
-     * Invoked when the Activity loses user focus.
-     */
+    @Override
+    public void onBackPressed() {
+        boolean exit = Menu.backPage();
+        if (exit) {
+            super.onBackPressed();
+        }
+        s25view.getThread().setState(GameState.STATE_MENU);
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
-        sector25view.getThread().pause();
+        s25view.getThread().pause();
     }
 
-    /**
-     * Invoked when the Activity loses user focus.
-     */
     @Override
     protected void onResume() {
         super.onResume();
-        sector25view.getThread().unpause();
+        s25view.getThread().unpause();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        sector25view.getThread().saveState(outState);
+        s25view.getThread().saveState(outState);
     }
 
 }

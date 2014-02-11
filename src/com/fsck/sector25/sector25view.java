@@ -445,5 +445,4 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
     public static void startGame() {
         thread.startGame();
     }
-
 }

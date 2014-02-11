@@ -30,7 +30,7 @@ public class Menu {
     private Point mButton1;
     private Point mButton2;
     private int mSelected;
-    private int mPopup;
+    private static int mPopup;
     private int mMapPosition;
     private static Healthbar mHealth;
     private static Energybar mEnergy;
@@ -417,6 +417,7 @@ public class Menu {
                             /*
                              *  Play button.  This starts a new game so reset anything
                              *  which remains between levels (health).
+                             *  TODO: Move this code, this should just be switching menus
                              */
                             mPage = MenuPage.LEVELSELECT;
                             mHealth.reset();
@@ -521,6 +522,25 @@ public class Menu {
 
     public static MenuPage getPage() {
         return mPage;
+    }
+
+    /***
+     * Returns to the former page when the back button is pressed.
+     * @return whether we were already on the main menu (so exit app)
+     */
+    public static boolean backPage() {
+        if (mPage != MenuPage.MAINMENU) {
+            if (mPopup != 0) {
+                mPopup = 0;
+            } else {
+                mPage = MenuPage.MAINMENU;
+                // TODO: place holder, we should know which way to go.
+                mAnimationTarget = AnimationTarget.LEFT;
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public static void update() {
