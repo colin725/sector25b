@@ -103,29 +103,25 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
             synchronized (mSurfaceHolder) {
                 // Measure time
                 long now = System.currentTimeMillis();
-                double elapsedFrame = (now - mLastTime);
                 double elapsedSmoke = (now - mLastSmoke);
                 double elapsedShot = (now - mLastShot);
 
-                // Update the default game play
-                if (elapsedFrame > 33) {
-
-                    if (mState == GameState.STATE_RUNNING) {
-                        updateRunning(now, elapsedShot);
-                        updateSmoke(now, elapsedSmoke);
-                        updateEnemies(now);
-                    } else if (mState == GameState.STATE_MENU) {
-                        updateMenu();
-                        updateSmoke(now, elapsedSmoke);
-                        updateEnemies(now);
-                    } else if (mState == GameState.STATE_PAUSE) {
-                        updatePaused();
-                    } else if (mState == GameState.STATE_DEAD) {
-                        updateDead();
-                    }
-
-                    mLastTime = now;
+                if (mState == GameState.STATE_RUNNING) {
+                    updateRunning(now, elapsedShot);
+                    updateSmoke(now, elapsedSmoke);
+                    updateEnemies(now);
+                } else if (mState == GameState.STATE_MENU) {
+                    updateMenu();
+                    updateSmoke(now, elapsedSmoke);
+                    updateEnemies(now);
+                } else if (mState == GameState.STATE_PAUSE) {
+                    updatePaused();
+                } else if (mState == GameState.STATE_DEAD) {
+                    updateDead();
                 }
+                Menu.update();
+
+                mLastTime = now;
             }
         }
 
@@ -211,10 +207,18 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                 try {
                     c = mSurfaceHolder.lockCanvas();
                     synchronized (mSurfaceHolder) {
-                        update();
-                        if (mSurfaceSizeSet)
-                            doDraw(c);
+                        //Frame Rate
+                        long now = System.currentTimeMillis();
+                        long elapsedFrame = Math.max(0, Math.min(16, now - mLastTime));
+                        if (elapsedFrame >= 16) {
+                            update();
+                            if (mSurfaceSizeSet) doDraw(c);
+                        } else {
+                            sleep(16 - elapsedFrame);
+                        }
                     }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 } finally {
                     if (c != null) {
                         mSurfaceHolder.unlockCanvasAndPost(c);

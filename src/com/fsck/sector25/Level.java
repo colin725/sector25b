@@ -10,7 +10,7 @@ import android.graphics.Paint;
 public class Level {
 
     private int mHeight;
-    private ArrayList<Enemy> mEnemies;
+    private static ArrayList<Enemy> mEnemies;
     private Stars mStars;
     private Smoke mSmoke;
     private Projectiles mProjectiles;
@@ -162,7 +162,7 @@ public class Level {
     }
 
     public void clear() {
-        mEnemies = new ArrayList<Enemy>();
+        mEnemies.clear();
         mSmoke.clear();
         mProjectiles.clear();
         mLast = new long[2];
