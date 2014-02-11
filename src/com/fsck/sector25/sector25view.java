@@ -67,6 +67,7 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
                     R.drawable.background);
             mMenu = new Menu();
             mMenu.setHealth(mHud.getHealthbar());
+            mMenu.setEnergy(mHud.getEnergybar());
             //mDataStore = new DataStore(1, context);
 
         }
@@ -186,13 +187,15 @@ class sector25view extends SurfaceView implements SurfaceHolder.Callback {
 
             // shoot (place holder, will have to create different
             // shots/upgrades)
-            if (elapsedShot > 100) {
+            int energy =  mHud.getEnergybar().getEnergy();
+            if (elapsedShot > 100 && energy > 5) {
                 if (mLevel.shoot(gunDirection, Character.getShotX(),
                         Character.getShotY())) {
                     mLastShot = now;
+                    GameHUD.incrementEnergy(-5);
                 }
             }
-
+            
             if (mHud.win()) {
                 mState = GameState.STATE_WIN;
             } else if (mHud.isDead()) {

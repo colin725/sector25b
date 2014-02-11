@@ -17,6 +17,7 @@ import android.view.MotionEvent;
 public class GameHUD {
 
     private static Healthbar mHealthBar;
+    private static Energybar mEnergyBar;
     private static Joystick mJoy;
     private static int mHeight, mWidth;
     private static int mScore;
@@ -36,6 +37,7 @@ public class GameHUD {
     public GameHUD(Context context) {
         Resources res = context.getResources();
         mHealthBar = new Healthbar(res);
+        mEnergyBar = new Energybar(res);
         mPause = BitmapFactory.decodeResource(res, R.drawable.pause);
         mPlay = BitmapFactory.decodeResource(res, R.drawable.play);
         mTime = BitmapFactory.decodeResource(res, R.drawable.time);
@@ -50,7 +52,8 @@ public class GameHUD {
         if (!state.equals(GameState.STATE_MENU)) {
             mJoy.drawLeft(canvas, paint);
             mJoy.drawRight(canvas, paint);
-            mHealthBar.draw(canvas, mWidth / 2, mHeight * 9 / 10);
+            mHealthBar.draw(canvas, mWidth / 2, mHeight * 9/10);
+            mEnergyBar.draw(canvas, mWidth / 2, (int) (mHeight * .95));
             drawPauseButton(canvas, paint);
             drawGameCounter(canvas, paint);
         }
@@ -136,6 +139,10 @@ public class GameHUD {
             mTotalDistance += mJoy.getX1() / 1000;
             mGameCounter = (int) mTotalDistance;
         }
+        //Energy ticker
+        if(mEnergyBar.getEnergy() < 100) {
+        	GameHUD.incrementEnergy(1);
+        }
     }
 
     public void addKills(int kills) {
@@ -146,6 +153,10 @@ public class GameHUD {
     public Healthbar getHealthbar() {
         return mHealthBar;
     }
+    
+    public Energybar getEnergybar() {
+        return mEnergyBar;
+    }
 
     public static void incrementHealth(int increment) {
         mHealthBar.incrementHealth(increment);
@@ -153,6 +164,10 @@ public class GameHUD {
 
     public void takeDamage(int damage) {
         incrementHealth(-1 * damage);
+    }
+    
+    public static void incrementEnergy(int increment) {
+        mEnergyBar.incrementEnergy(increment);;
     }
 
     public boolean isDead() {
